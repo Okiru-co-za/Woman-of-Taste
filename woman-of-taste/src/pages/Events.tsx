@@ -112,7 +112,7 @@ export default function Events() {
     <Layout title="Events">
       <Helmet>
         <title>Events | Woman of Taste — Johannesburg</title>
-        <meta name="description" content="Curated events in Johannesburg — private screenings, high tea, Women's Month dinners, spring soirées & more. Book your seat at a Woman of Taste experience." />
+        <meta name="description" content="Curated events in Johannesburg — private screenings, high tea, elegant soirées, spring celebrations & more. Book your seat at a Woman of Taste experience." />
         <meta property="og:title" content="Events | Woman of Taste" />
         <meta property="og:description" content="Exclusive curated events in Johannesburg. Private screenings, high teas, and more." />
         <meta property="og:url" content="https://womanoftaste.co.za/events" />
