@@ -39,7 +39,10 @@ export interface Event {
   partners?: { name: string; logoUrl: string }[];
   heroStyle?: "gradient" | "poster";
   heroTitleFont?: string;
-  posterImages?: { url: string; alt: string; className?: string }[];
+  heroDateLabel?: string;
+  heroTimeLabel?: string;
+  heroCtaLabel?: string;
+  posterImages?: { url: string; alt: string; style: Record<string, string> }[];
 }
 
 export const events: Event[] = [
@@ -113,15 +116,18 @@ export const events: Event[] = [
       { name: "DineXp", logoUrl: "/images/partners/dinexp.png" },
       { name: "PORE Aesthetic Clinic", logoUrl: "/images/partners/pore.png" },
       { name: "CORE Reformer Pilates", logoUrl: "/images/partners/core.png" },
-      { name: "Cuvée Zero de Bain", logoUrl: "/images/partners/cuvee-zero-de-bain.jpg" },
+      { name: "Cuvée Zero de Bain", logoUrl: "/images/partners/cuvee-zero-de-bain.png" },
     ],
     heroStyle: "poster",
     heroTitleFont: "'Alex Brush', cursive",
+    heroDateLabel: "9 AUGUST",
+    heroTimeLabel: "NOON TO 5PM",
+    heroCtaLabel: "Book Now",
     posterImages: [
-      { url: "/images/events/la-femme/rose-bouquet.png", alt: "Pink and white rose bouquet", className: "absolute top-0 right-0 w-[62%] opacity-95" },
-      { url: "/images/events/la-femme/champagne-glass.png", alt: "Glass of rosé", className: "absolute bottom-0 left-[30%] w-[34%]" },
-      { url: "/images/events/la-femme/pink-diary.png", alt: "Pink diary with pearl bow", className: "absolute bottom-0 left-0 w-[44%]" },
-      { url: "/images/events/la-femme/candle-votive.png", alt: "Rose gold candle votive", className: "absolute bottom-[4%] right-[4%] w-[24%]" },
+      { url: "/images/events/la-femme/rose-bouquet.png", alt: "Pink and white rose bouquet", style: { left: "8.7%", width: "91.3%", top: "0%", height: "63.3%" } },
+      { url: "/images/events/la-femme/champagne-glass.png", alt: "Glass of rosé", style: { left: "38.2%", width: "16.4%", top: "7.9%", height: "84.7%" } },
+      { url: "/images/events/la-femme/pink-diary.png", alt: "Pink diary with pearl bow", style: { left: "9.3%", width: "33.3%", top: "62.7%", height: "36%" } },
+      { url: "/images/events/la-femme/candle-votive.png", alt: "Rose gold candle votive", style: { left: "73.1%", width: "17.5%", top: "65.2%", height: "32.2%" } },
     ],
     theme: {
       season: "la-femme",

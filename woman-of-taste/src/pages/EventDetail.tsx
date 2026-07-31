@@ -38,7 +38,7 @@ function PartnerLogo({
           src={logoUrl}
           alt={name}
           className={imgClass}
-          style={{ opacity: 0.95, filter: monochrome ? "grayscale(1) contrast(1.05)" : undefined }}
+          style={{ opacity: 0.95 }}
           onError={() => setImageFailed(true)}
         />
       )}
@@ -258,21 +258,45 @@ export default function EventDetail() {
                 {event.subtitle}
               </p>
 
-              <div className="flex flex-wrap gap-6 font-sans text-sm mb-10" style={{ color: "#7a2249" }}>
-                <span className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-4 font-sans text-sm mb-8 divide-x" style={{ color: "#7a2249" }}>
+                <span className="flex items-center gap-2 pr-4">
                   <CalendarDays size={15} style={{ color: "#c23b74" }} />
-                  {event.date}
+                  <span className="font-semibold">{event.heroDateLabel ?? event.date}</span>
                 </span>
                 {event.time && (
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-2 pl-4 pr-4" style={{ borderColor: "rgba(156,31,82,0.2)" }}>
                     <Clock size={15} style={{ color: "#c23b74" }} />
-                    {event.time}
+                    <span className="font-semibold">{event.heroTimeLabel ?? event.time}</span>
                   </span>
                 )}
                 {event.price && (
-                  <span className="font-semibold" style={{ color: "#9c1f52" }}>R{event.price}</span>
+                  <span className="pl-4 font-serif text-xl font-semibold" style={{ color: "#9c1f52", borderColor: "rgba(156,31,82,0.2)" }}>R{event.price}</span>
                 )}
               </div>
+
+              {event.highlights.length > 0 && (
+                <div className="flex flex-wrap gap-x-5 gap-y-4 mb-8 divide-x" style={{ borderColor: "rgba(156,31,82,0.15)" }}>
+                  {event.highlights.map((h) => (
+                    <div key={h.title} className="flex flex-col items-start gap-1 pl-5 first:pl-0 first:border-0" style={{ borderColor: "rgba(156,31,82,0.15)" }}>
+                      <span className="text-lg leading-none">{h.icon}</span>
+                      <span className="font-sans text-[10px] font-semibold tracking-wider uppercase leading-tight max-w-[6rem]" style={{ color: "#7a2249" }}>
+                        {h.title}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {event.dressCode && (
+                <div className="mb-8">
+                  <span className="font-sans text-[10px] font-semibold tracking-[0.3em] uppercase block mb-1" style={{ color: "#c23b74" }}>
+                    Dress Code
+                  </span>
+                  <span className="font-serif text-lg font-semibold uppercase" style={{ color: "#9c1f52" }}>
+                    {event.dressCode}
+                  </span>
+                </div>
+              )}
 
               {event.partners && event.partners.length > 0 && (
                 <motion.div
@@ -294,7 +318,7 @@ export default function EventDetail() {
 
               <a href="#booking" className="inline-block font-sans text-xs font-semibold tracking-widest uppercase px-10 py-4 rounded-full text-white transition-all"
                 style={{ background: "linear-gradient(135deg, #9c1f52, #c23b74)" }}>
-                {event.ctaLabel ?? "Reserve Your Seat"} →
+                {event.heroCtaLabel ?? event.ctaLabel ?? "Reserve Your Seat"} →
               </a>
             </motion.div>
 
@@ -304,10 +328,16 @@ export default function EventDetail() {
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1, delay: 0.2 }}
-                className="relative h-[420px] lg:h-[560px]"
+                className="relative w-full aspect-[916/821]"
               >
                 {event.posterImages.map((img) => (
-                  <img key={img.url} src={img.url} alt={img.alt} className={img.className} />
+                  <img
+                    key={img.url}
+                    src={img.url}
+                    alt={img.alt}
+                    className="absolute object-contain"
+                    style={img.style}
+                  />
                 ))}
               </motion.div>
             )}
