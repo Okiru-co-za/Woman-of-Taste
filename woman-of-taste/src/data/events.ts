@@ -13,6 +13,7 @@ export interface Event {
   time?: string;
   location: string;
   locationDetail?: string;
+  venueUrl?: string;
   description: string;
   story: string;
   storyAct2?: string;
@@ -84,10 +85,11 @@ export const events: Event[] = [
     time: "Noon — 17:00",
     location: "Luna Lusa, Kyalami",
     locationDetail: "Corner Allandale & President Drive, Kyalami, Midrand, 1685",
+    venueUrl: "https://lunalusa.com/",
     description:
-      "An afternoon soirée in shades of pink and white — a two-course set menu, a crafted cocktail flight, and a full pampering experience at Luna Lusa, Kyalami.",
-    story: `Some afternoons ask you to arrive fully — dressed in softness, ready to be poured into.\n\nLa Femme by Luna Lusa is Woman of Taste's ode to that kind of afternoon. Pink and white as far as the eye can see. Prosecco that never stops arriving. A room full of women who came to be celebrated, not just to celebrate.\n\nThis is not just lunch. This is a whole afternoon designed around the art of being a woman of taste — savoured slowly, from noon until the light turns golden.`,
-    storyAct2: `Woman of Taste has partnered with Luna Lusa in Kyalami — alongside DineXp, PORE Aesthetic Clinic, CORE Reformer Pilates, and Cuvée Zero de Bain — to curate a soirée that goes far beyond the table. Settle in for a two-course set menu and a crafted cocktail flight, top up your glass with complimentary Italian prosecco, and drift between a personalised body scrub station and a mist & hydration booth between courses.\n\nCome dressed in shades of pink and white. Bring the version of yourself that's ready to be looked after for a change.`,
+      "An afternoon soirée in shades of pink and white, featuring a two-course set menu, a crafted cocktail flight, and a full pampering experience at Luna Lusa, Kyalami.",
+    story: `Some afternoons ask you to arrive fully, dressed in softness, ready to be poured into.\n\nLa Femme by Luna Lusa is Woman of Taste's ode to that kind of afternoon. Pink and white as far as the eye can see. Prosecco that never stops arriving. A room full of women who came to be celebrated, not just to celebrate.\n\nThis is not just lunch. This is a whole afternoon designed around the art of being a woman of taste, savoured slowly, from noon until the light turns golden.`,
+    storyAct2: `Woman of Taste has partnered with Luna Lusa in Kyalami, alongside DineXp, PORE Aesthetic Clinic, CORE Reformer Pilates, and Cuvée Zero de Bain, to curate a soirée that goes far beyond the table. Settle in for a two-course set menu and a crafted cocktail flight, top up your glass with complimentary Italian prosecco, and drift between a personalised body scrub station and a mist & hydration booth between courses.\n\nCome dressed in shades of pink and white. Bring the version of yourself that's ready to be looked after for a change.`,
     type: "upcoming",
     category: "Women's Soirée",
     ctaLabel: "Reserve Your Seat",
@@ -108,15 +110,15 @@ export const events: Event[] = [
       { name: "DineXp", logoUrl: "/images/partners/dinexp.png" },
       { name: "PORE Aesthetic Clinic", logoUrl: "/images/partners/pore.png" },
       { name: "CORE Reformer Pilates", logoUrl: "/images/partners/core.png" },
-      { name: "Cuvée Zero de Bain", logoUrl: "/images/partners/cuvee-zero-de-bain.png" },
+      { name: "Cuvée Zero de Bain", logoUrl: "/images/partners/cuvee-zero-de-bain.jpg" },
     ],
     theme: {
       season: "la-femme",
-      gradient: "linear-gradient(160deg, #3a1420 0%, #5a1f30 35%, #8a3550 65%, #d998b0 100%)",
-      gradientDark: "linear-gradient(135deg, #3a1420 0%, #5a1f30 100%)",
-      accent: "hsl(335,60%,80%)",
-      accentDark: "hsl(335,50%,62%)",
-      textLight: "rgba(255,245,248,0.9)",
+      gradient: "linear-gradient(160deg, #6b2440 0%, #96395c 35%, #c96f8c 65%, #f5dbe4 100%)",
+      gradientDark: "linear-gradient(135deg, #6b2440 0%, #8a3454 100%)",
+      accent: "hsl(340,70%,88%)",
+      accentDark: "hsl(335,55%,68%)",
+      textLight: "rgba(255,245,248,0.92)",
     },
   },
   {

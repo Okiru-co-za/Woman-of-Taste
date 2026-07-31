@@ -12,12 +12,14 @@ const API_BASE = "/api";
 
 type BookingStep = "form" | "loading" | "success" | "error";
 
-function PartnerLogo({ name, logoUrl, accent }: { name: string; logoUrl: string; accent: string }) {
+function PartnerLogo({ name, logoUrl, accent, size = "sm" }: { name: string; logoUrl: string; accent: string; size?: "sm" | "lg" }) {
   const [imageFailed, setImageFailed] = useState(false);
+  const boxClass = size === "lg" ? "h-24 px-8" : "h-20 px-6";
+  const imgClass = size === "lg" ? "max-h-16 max-w-[11rem] object-contain" : "max-h-10 max-w-[9rem] object-contain";
   return (
     <div
-      className="flex items-center justify-center h-20 px-6 rounded-2xl"
-      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+      className={`flex items-center justify-center rounded-2xl ${boxClass}`}
+      style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", backdropFilter: "blur(8px)" }}
     >
       {imageFailed ? (
         <span className="font-sans text-xs font-semibold tracking-widest uppercase text-center" style={{ color: accent }}>
@@ -27,8 +29,8 @@ function PartnerLogo({ name, logoUrl, accent }: { name: string; logoUrl: string;
         <img
           src={logoUrl}
           alt={name}
-          className="max-h-10 max-w-[9rem] object-contain"
-          style={{ opacity: 0.9 }}
+          className={imgClass}
+          style={{ opacity: 0.95 }}
           onError={() => setImageFailed(true)}
         />
       )}
@@ -201,7 +203,7 @@ export default function EventDetail() {
 
       {/* ── Immersive Hero ── */}
       <section
-        className="relative min-h-screen flex flex-col justify-end overflow-hidden"
+        className="relative min-h-[85vh] flex flex-col justify-center overflow-hidden"
         style={{ background: theme.gradient }}
       >
         {/* Atmospheric texture overlays */}
@@ -230,7 +232,7 @@ export default function EventDetail() {
         </div>
 
         {/* Hero content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pb-20 pt-40">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-28">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
@@ -268,6 +270,27 @@ export default function EventDetail() {
                 {event.location}
               </span>
             </div>
+
+            {event.partners && event.partners.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.7 }}
+                className="mt-10"
+              >
+                <span
+                  className="font-sans text-[10px] font-semibold tracking-[0.35em] uppercase mb-4 block"
+                  style={{ color: theme.accent }}
+                >
+                  In Partnership With
+                </span>
+                <div className="flex flex-wrap gap-4">
+                  {event.partners.map((partner) => (
+                    <PartnerLogo key={partner.name} name={partner.name} logoUrl={partner.logoUrl} accent={theme.accent} size="lg" />
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </motion.div>
         </div>
 
@@ -417,22 +440,6 @@ export default function EventDetail() {
         </section>
       )}
 
-      {/* ── Partners ── */}
-      {event.partners && event.partners.length > 0 && (
-        <section className="py-16" style={{ background: theme.gradientDark }}>
-          <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center">
-            <span className="font-sans text-[10px] font-semibold tracking-[0.35em] uppercase mb-8 block" style={{ color: theme.accent }}>
-              In Partnership With
-            </span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
-              {event.partners.map((partner) => (
-                <PartnerLogo key={partner.name} name={partner.name} logoUrl={partner.logoUrl} accent={theme.accent} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* ── Details + Booking ── */}
       <section className="py-24" style={{ background: theme.gradientDark }}>
         <div className="max-w-6xl mx-auto px-6 lg:px-12">
@@ -456,7 +463,7 @@ export default function EventDetail() {
                 {[
                   { label: "Date", value: event.date, icon: "📅" },
                   ...(event.time ? [{ label: "Time", value: event.time, icon: "🕐" }] : []),
-                  { label: "Venue", value: event.location, icon: "📍" },
+                  { label: "Venue", value: event.location, icon: "📍", link: event.venueUrl },
                   ...(event.locationDetail ? [{ label: "Location Note", value: event.locationDetail, icon: "🗺️" }] : []),
                   ...(event.dressCode ? [{ label: "Dress Code", value: event.dressCode, icon: "✨" }] : []),
                   ...(event.ticketsLeft ? [{ label: "Seats Remaining", value: `${event.ticketsLeft} available`, icon: "🎟️" }] : []),
@@ -472,6 +479,17 @@ export default function EventDetail() {
                         {detail.label}
                       </p>
                       <p className="font-serif text-base text-white leading-relaxed">{detail.value}</p>
+                      {"link" in detail && detail.link && (
+                        <a
+                          href={detail.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-block mt-1 font-sans text-xs underline underline-offset-2"
+                          style={{ color: theme.accent }}
+                        >
+                          Visit the venue website →
+                        </a>
+                      )}
                     </div>
                   </div>
                 ))}

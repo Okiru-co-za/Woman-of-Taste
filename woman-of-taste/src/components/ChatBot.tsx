@@ -211,8 +211,8 @@ export default function ChatBot() {
         )}
       </AnimatePresence>
 
-      {/* Floating trigger — 64px on mobile, 128px on desktop */}
-      <div className="fixed bottom-6 right-4 sm:right-6 z-50 w-16 h-16 sm:w-32 sm:h-32">
+      {/* Floating trigger — 56px on mobile, 80px on desktop */}
+      <div className="fixed bottom-6 right-4 sm:right-6 z-50 w-14 h-14 sm:w-20 sm:h-20">
         <motion.button
           onClick={() => {
             setBanner(false);
@@ -280,8 +280,8 @@ export default function ChatBot() {
                   src="/aura-wheat.png"
                   alt="Chat with Aura"
                   style={{
-                    width: 108,
-                    height: 152,
+                    width: 68,
+                    height: 96,
                     objectFit: "contain",
                     mixBlendMode: "screen",
                     filter: "drop-shadow(0 -2px 8px rgba(180,130,60,0.4))",
