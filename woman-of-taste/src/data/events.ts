@@ -37,6 +37,7 @@ export interface Event {
   };
   cardTagline: string;
   partners?: { name: string; logoUrl: string }[];
+  galleryImages?: { url: string; caption?: string }[];
 }
 
 export const events: Event[] = [
@@ -111,6 +112,12 @@ export const events: Event[] = [
       { name: "PORE Aesthetic Clinic", logoUrl: "/images/partners/pore.png" },
       { name: "CORE Reformer Pilates", logoUrl: "/images/partners/core.png" },
       { name: "Cuvée Zero de Bain", logoUrl: "/images/partners/cuvee-zero-de-bain.jpg" },
+    ],
+    galleryImages: [
+      { url: "/images/events/la-femme/champagne-glass.png", caption: "Rosé, poured all afternoon" },
+      { url: "/images/events/la-femme/pink-diary.png", caption: "A moment to write it down" },
+      { url: "/images/events/la-femme/rose-bouquet.png", caption: "Pink and white, everywhere you look" },
+      { url: "/images/events/la-femme/candle-votive.png", caption: "Candlelight for the golden hour" },
     ],
     theme: {
       season: "la-femme",

@@ -298,6 +298,42 @@ export default function EventDetail() {
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/40 to-transparent" />
       </section>
 
+      {/* ── Set the Scene (gallery) ── */}
+      {event.galleryImages && event.galleryImages.length > 0 && (
+        <section className="py-20" style={{ background: theme.gradientDark }}>
+          <div className="max-w-6xl mx-auto px-6 lg:px-12">
+            <div className="text-center mb-12">
+              <span className="font-sans text-xs font-semibold tracking-[0.3em] uppercase mb-3 block" style={{ color: theme.accent }}>
+                The Mood
+              </span>
+              <h2 className="font-serif text-3xl lg:text-4xl font-light text-white">Set the scene</h2>
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+              {event.galleryImages.map((img, i) => (
+                <motion.div
+                  key={img.url}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1, duration: 0.6 }}
+                  className="rounded-3xl overflow-hidden flex flex-col"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                >
+                  <div className="aspect-[3/4] flex items-center justify-center p-6">
+                    <img src={img.url} alt={img.caption ?? ""} className="max-w-full max-h-full object-contain" />
+                  </div>
+                  {img.caption && (
+                    <p className="font-serif text-xs italic text-center pb-5 px-3" style={{ color: theme.textLight }}>
+                      {img.caption}
+                    </p>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── Story Section ── */}
       <section className="py-24 relative" style={{ background: theme.gradientDark }}>
         <div className="absolute inset-0 opacity-20"
