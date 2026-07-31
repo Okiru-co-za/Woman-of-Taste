@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useParams, Link, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, CalendarDays, Clock, ChevronLeft, Loader2, CheckCircle, AlertCircle, Minus, Plus, Users } from "lucide-react";
+import { MapPin, CalendarDays, Clock, ChevronLeft, Loader2, CheckCircle, AlertCircle, Minus, Plus, Users, UtensilsCrossed, Martini, Wine, Sparkles, Camera, Droplets } from "lucide-react";
 import Layout from "@/components/Layout";
 import { getEventById, isEventPast } from "@/data/events";
 import { useUserAuth } from "@/hooks/useUserAuth";
@@ -11,6 +11,15 @@ import SignInModal from "@/components/SignInModal";
 const API_BASE = "/api";
 
 type BookingStep = "form" | "loading" | "success" | "error";
+
+const HERO_ICON_MAP: Record<string, typeof Camera> = {
+  "🍽️": UtensilsCrossed,
+  "🍸": Martini,
+  "🥂": Wine,
+  "🧴": Sparkles,
+  "📸": Camera,
+  "💦": Droplets,
+};
 
 function PartnerLogo({
   name, logoUrl, accent, size = "sm", monochrome = false, light = false, bare = false,
@@ -220,7 +229,19 @@ export default function EventDetail() {
 
       {/* ── Immersive Hero ── */}
       {event.heroStyle === "poster" ? (
-        <section className="relative overflow-hidden" style={{ background: "linear-gradient(135deg, #fdf2f6 0%, #fbe4ee 55%, #f6d3e3 100%)" }}>
+        <section
+          className="relative overflow-hidden"
+          style={{
+            backgroundImage: event.heroBackgroundImage ? `url(${event.heroBackgroundImage})` : undefined,
+            backgroundSize: "cover",
+            backgroundPosition: "right center",
+            backgroundColor: "#fbe4ee",
+          }}
+        >
+          {/* Scrim so text stays legible over the photo. Mobile: near-solid wash (text column spans the photo). Desktop: horizontal fade that reveals the photo on the right. */}
+          <div className="absolute inset-0 sm:hidden" style={{ background: "#fdf2f6", opacity: 0.88 }} />
+          <div className="absolute inset-0 hidden sm:block" style={{ background: "linear-gradient(90deg, #fdf2f6 0%, #fdf2f6 32%, rgba(253,242,246,0.85) 46%, rgba(253,242,246,0.35) 60%, transparent 74%)" }} />
+
           <div className="absolute top-24 left-6 lg:left-12 z-20">
             <Link href="/events">
               <motion.button
@@ -236,12 +257,12 @@ export default function EventDetail() {
             </Link>
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-32 pb-20 grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: text content */}
+          <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-32 pb-20">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              className="max-w-xl"
             >
               <span className="font-sans text-xs font-semibold tracking-[0.35em] uppercase mb-5 block" style={{ color: "#c23b74" }}>
                 {event.category} · {event.date}
@@ -258,32 +279,35 @@ export default function EventDetail() {
                 {event.subtitle}
               </p>
 
-              <div className="flex flex-wrap items-center gap-4 font-sans text-sm mb-8 divide-x" style={{ color: "#7a2249" }}>
-                <span className="flex items-center gap-2 pr-4">
+              <div className="flex flex-wrap items-center gap-4 font-sans text-sm mb-8" style={{ color: "#7a2249" }}>
+                <span className="flex items-center gap-2 pr-4 border-r" style={{ borderColor: "rgba(156,31,82,0.2)" }}>
                   <CalendarDays size={15} style={{ color: "#c23b74" }} />
                   <span className="font-semibold">{event.heroDateLabel ?? event.date}</span>
                 </span>
                 {event.time && (
-                  <span className="flex items-center gap-2 pl-4 pr-4" style={{ borderColor: "rgba(156,31,82,0.2)" }}>
+                  <span className="flex items-center gap-2 pr-4 border-r" style={{ borderColor: "rgba(156,31,82,0.2)" }}>
                     <Clock size={15} style={{ color: "#c23b74" }} />
                     <span className="font-semibold">{event.heroTimeLabel ?? event.time}</span>
                   </span>
                 )}
                 {event.price && (
-                  <span className="pl-4 font-serif text-xl font-semibold" style={{ color: "#9c1f52", borderColor: "rgba(156,31,82,0.2)" }}>R{event.price}</span>
+                  <span className="font-serif text-xl font-semibold" style={{ color: "#9c1f52" }}>R{event.price}</span>
                 )}
               </div>
 
               {event.highlights.length > 0 && (
-                <div className="flex flex-wrap gap-x-5 gap-y-4 mb-8 divide-x" style={{ borderColor: "rgba(156,31,82,0.15)" }}>
-                  {event.highlights.map((h) => (
-                    <div key={h.title} className="flex flex-col items-start gap-1 pl-5 first:pl-0 first:border-0" style={{ borderColor: "rgba(156,31,82,0.15)" }}>
-                      <span className="text-lg leading-none">{h.icon}</span>
-                      <span className="font-sans text-[10px] font-semibold tracking-wider uppercase leading-tight max-w-[6rem]" style={{ color: "#7a2249" }}>
-                        {h.title}
-                      </span>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 sm:gap-2 mb-8">
+                  {event.highlights.map((h) => {
+                    const Icon = HERO_ICON_MAP[h.icon];
+                    return (
+                      <div key={h.title} className="flex flex-col items-center text-center gap-1.5">
+                        {Icon ? <Icon size={18} style={{ color: "#9c1f52" }} /> : <span className="text-base leading-none">{h.icon}</span>}
+                        <span className="font-sans text-[8px] font-semibold tracking-wide uppercase leading-tight" style={{ color: "#7a2249" }}>
+                          {h.title}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -321,26 +345,6 @@ export default function EventDetail() {
                 {event.heroCtaLabel ?? event.ctaLabel ?? "Reserve Your Seat"} →
               </a>
             </motion.div>
-
-            {/* Right: photographic still life */}
-            {event.posterImages && event.posterImages.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 1, delay: 0.2 }}
-                className="relative w-full aspect-[916/821]"
-              >
-                {event.posterImages.map((img) => (
-                  <img
-                    key={img.url}
-                    src={img.url}
-                    alt={img.alt}
-                    className="absolute object-contain"
-                    style={img.style}
-                  />
-                ))}
-              </motion.div>
-            )}
           </div>
         </section>
       ) : (

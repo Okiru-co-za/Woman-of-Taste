@@ -42,7 +42,7 @@ export interface Event {
   heroDateLabel?: string;
   heroTimeLabel?: string;
   heroCtaLabel?: string;
-  posterImages?: { url: string; alt: string; style: Record<string, string> }[];
+  heroBackgroundImage?: string;
 }
 
 export const events: Event[] = [
@@ -123,12 +123,7 @@ export const events: Event[] = [
     heroDateLabel: "9 AUGUST",
     heroTimeLabel: "NOON TO 5PM",
     heroCtaLabel: "Book Now",
-    posterImages: [
-      { url: "/images/events/la-femme/rose-bouquet.png", alt: "Pink and white rose bouquet", style: { left: "8.7%", width: "91.3%", top: "0%", height: "63.3%" } },
-      { url: "/images/events/la-femme/champagne-glass.png", alt: "Glass of rosé", style: { left: "38.2%", width: "16.4%", top: "7.9%", height: "84.7%" } },
-      { url: "/images/events/la-femme/pink-diary.png", alt: "Pink diary with pearl bow", style: { left: "9.3%", width: "33.3%", top: "62.7%", height: "36%" } },
-      { url: "/images/events/la-femme/candle-votive.png", alt: "Rose gold candle votive", style: { left: "73.1%", width: "17.5%", top: "65.2%", height: "32.2%" } },
-    ],
+    heroBackgroundImage: "/images/events/la-femme/hero-bg.jpg",
     theme: {
       season: "la-femme",
       gradient: "linear-gradient(160deg, #6b2440 0%, #96395c 35%, #c96f8c 65%, #f5dbe4 100%)",
