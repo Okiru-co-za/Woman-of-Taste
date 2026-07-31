@@ -12,6 +12,30 @@ const API_BASE = "/api";
 
 type BookingStep = "form" | "loading" | "success" | "error";
 
+function PartnerLogo({ name, logoUrl, accent }: { name: string; logoUrl: string; accent: string }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  return (
+    <div
+      className="flex items-center justify-center h-20 px-6 rounded-2xl"
+      style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+    >
+      {imageFailed ? (
+        <span className="font-sans text-xs font-semibold tracking-widest uppercase text-center" style={{ color: accent }}>
+          {name}
+        </span>
+      ) : (
+        <img
+          src={logoUrl}
+          alt={name}
+          className="max-h-10 max-w-[9rem] object-contain"
+          style={{ opacity: 0.9 }}
+          onError={() => setImageFailed(true)}
+        />
+      )}
+    </div>
+  );
+}
+
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
   const event = getEventById(id ?? "");
@@ -389,6 +413,22 @@ export default function EventDetail() {
               {/* Bottom shimmer line */}
               <div className="h-px w-full" style={{ background: `linear-gradient(90deg, transparent, ${theme.accent}33, transparent)` }} />
             </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Partners ── */}
+      {event.partners && event.partners.length > 0 && (
+        <section className="py-16" style={{ background: theme.gradientDark }}>
+          <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center">
+            <span className="font-sans text-[10px] font-semibold tracking-[0.35em] uppercase mb-8 block" style={{ color: theme.accent }}>
+              In Partnership With
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+              {event.partners.map((partner) => (
+                <PartnerLogo key={partner.name} name={partner.name} logoUrl={partner.logoUrl} accent={theme.accent} />
+              ))}
+            </div>
           </div>
         </section>
       )}

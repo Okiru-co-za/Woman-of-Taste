@@ -79,7 +79,7 @@ export default function ExperienceNetworking() {
             <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
               className="bg-[hsl(225,50%,22%)] rounded-3xl p-10">
               <p className="font-serif text-xl font-light text-[hsl(40,25%,96%)] leading-relaxed italic mb-6">
-                "She Who Gathers is not just an event. It is a declaration that the most powerful thing a woman can do is pull other women toward their best selves."
+                "Gathering is not just an event. It is a declaration that the most powerful thing a woman can do is pull other women toward their best selves."
               </p>
               <div className="flex items-center gap-2">
                 <img src="/wot-logo.png" alt="WOT" className="w-8 h-8 object-contain" style={{ mixBlendMode: "screen" }} />
