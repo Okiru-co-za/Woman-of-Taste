@@ -316,10 +316,10 @@ export default function EventDetail() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1, duration: 0.6 }}
-                  className="rounded-3xl overflow-hidden flex flex-col"
+                  className={`rounded-3xl overflow-hidden flex flex-col ${img.wide ? "col-span-2" : ""}`}
                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
                 >
-                  <div className="aspect-[3/4] flex items-center justify-center p-6">
+                  <div className={`${img.wide ? "aspect-[16/10]" : "aspect-[3/4]"} flex items-center justify-center p-6`}>
                     <img src={img.url} alt={img.caption ?? ""} className="max-w-full max-h-full object-contain" />
                   </div>
                   {img.caption && (
