@@ -12,17 +12,25 @@ const API_BASE = "/api";
 
 type BookingStep = "form" | "loading" | "success" | "error";
 
-function PartnerLogo({ name, logoUrl, accent, size = "sm" }: { name: string; logoUrl: string; accent: string; size?: "sm" | "lg" }) {
+function PartnerLogo({
+  name, logoUrl, accent, size = "sm", monochrome = false, light = false, bare = false,
+}: { name: string; logoUrl: string; accent: string; size?: "sm" | "lg"; monochrome?: boolean; light?: boolean; bare?: boolean }) {
   const [imageFailed, setImageFailed] = useState(false);
-  const boxClass = size === "lg" ? "h-24 px-8" : "h-20 px-6";
-  const imgClass = size === "lg" ? "max-h-16 max-w-[11rem] object-contain" : "max-h-10 max-w-[9rem] object-contain";
+  const boxClass = bare ? "h-14" : size === "lg" ? "h-24 px-6 w-full" : "h-20 px-6";
+  const imgClass = bare ? "max-h-full max-w-full object-contain" : size === "lg" ? "max-h-16 max-w-full object-contain" : "max-h-10 max-w-[9rem] object-contain";
   return (
     <div
-      className={`flex items-center justify-center rounded-2xl ${boxClass}`}
-      style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", backdropFilter: "blur(8px)" }}
+      className={`relative flex items-center justify-center overflow-hidden ${bare ? "" : "rounded-2xl"} ${boxClass}`}
+      style={
+        bare
+          ? {}
+          : light
+            ? { background: "#fff", border: "1px solid rgba(155,40,90,0.14)", boxShadow: "0 4px 20px rgba(155,40,90,0.08)" }
+            : { background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", backdropFilter: "blur(8px)" }
+      }
     >
       {imageFailed ? (
-        <span className="font-sans text-xs font-semibold tracking-widest uppercase text-center" style={{ color: accent }}>
+        <span className="font-sans text-xs font-semibold tracking-widest uppercase text-center" style={{ color: light ? "#9c1f52" : accent }}>
           {name}
         </span>
       ) : (
@@ -30,8 +38,17 @@ function PartnerLogo({ name, logoUrl, accent, size = "sm" }: { name: string; log
           src={logoUrl}
           alt={name}
           className={imgClass}
-          style={{ opacity: 0.95 }}
+          style={{ opacity: 0.95, filter: monochrome ? "grayscale(1) contrast(1.05)" : undefined }}
           onError={() => setImageFailed(true)}
+        />
+      )}
+      {monochrome && (
+        <motion.div
+          className="absolute inset-y-0 w-1/3 pointer-events-none"
+          style={{ background: "linear-gradient(75deg, transparent, rgba(255,255,255,0.85), transparent)" }}
+          initial={{ left: "-45%" }}
+          animate={{ left: "140%" }}
+          transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 2.8, ease: "easeInOut" }}
         />
       )}
     </div>
@@ -202,135 +219,195 @@ export default function EventDetail() {
       </Helmet>
 
       {/* ── Immersive Hero ── */}
-      <section
-        className="relative min-h-[85vh] flex flex-col justify-center overflow-hidden"
-        style={{ background: theme.gradient }}
-      >
-        {/* Atmospheric texture overlays */}
-        <div className="absolute inset-0 opacity-30"
-          style={{ backgroundImage: "radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%)" }} />
-
-        {/* Back link */}
-        <div className="absolute top-28 left-6 lg:left-12 z-20">
-          <Link href="/events">
-            <motion.button
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="flex items-center gap-2 font-sans text-xs tracking-widest uppercase transition-all"
-              style={{ color: theme.accent, opacity: 0.8 }}
-            >
-              <ChevronLeft size={14} />
-              All Events
-            </motion.button>
-          </Link>
-        </div>
-
-        {/* WOT logo watermark */}
-        <div className="absolute top-1/2 right-12 -translate-y-1/2 opacity-[0.06] pointer-events-none hidden lg:block">
-          <img src="/wot-logo.png" alt="" className="w-80 h-80 object-contain" style={{ mixBlendMode: "screen" }} />
-        </div>
-
-        {/* Hero content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-28">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <span
-              className="font-sans text-xs font-semibold tracking-[0.35em] uppercase mb-4 block"
-              style={{ color: theme.accent }}
-            >
-              {event.category} · {event.date}
-            </span>
-            <h1
-              className="font-serif font-light leading-[1.05] mb-4"
-              style={{ fontSize: "clamp(3rem,7vw,6rem)", color: "rgba(255,255,255,0.96)" }}
-            >
-              {event.title}
-            </h1>
-            <p className="font-serif text-xl lg:text-2xl font-light mb-8 max-w-2xl leading-relaxed"
-              style={{ color: theme.accent, fontStyle: "italic" }}>
-              {event.subtitle}
-            </p>
-            <div className="flex flex-wrap gap-5 font-sans text-sm" style={{ color: theme.textLight }}>
-              <span className="flex items-center gap-2">
-                <CalendarDays size={14} style={{ color: theme.accent }} />
-                {event.date}
-              </span>
-              {event.time && (
-                <span className="flex items-center gap-2">
-                  <Clock size={14} style={{ color: theme.accent }} />
-                  {event.time}
-                </span>
-              )}
-              <span className="flex items-center gap-2">
-                <MapPin size={14} style={{ color: theme.accent }} />
-                {event.location}
-              </span>
-            </div>
-
-            {event.partners && event.partners.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.7 }}
-                className="mt-10"
+      {event.heroStyle === "poster" ? (
+        <section className="relative overflow-hidden" style={{ background: "linear-gradient(135deg, #fdf2f6 0%, #fbe4ee 55%, #f6d3e3 100%)" }}>
+          <div className="absolute top-24 left-6 lg:left-12 z-20">
+            <Link href="/events">
+              <motion.button
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex items-center gap-2 font-sans text-xs tracking-widest uppercase transition-all"
+                style={{ color: "#9c1f52", opacity: 0.75 }}
               >
-                <span
-                  className="font-sans text-[10px] font-semibold tracking-[0.35em] uppercase mb-4 block"
-                  style={{ color: theme.accent }}
-                >
-                  In Partnership With
+                <ChevronLeft size={14} />
+                All Events
+              </motion.button>
+            </Link>
+          </div>
+
+          <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 pt-32 pb-20 grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: text content */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <span className="font-sans text-xs font-semibold tracking-[0.35em] uppercase mb-5 block" style={{ color: "#c23b74" }}>
+                {event.category} · {event.date}
+              </span>
+              <h1 className="leading-[0.95] mb-1" style={{ fontFamily: event.heroTitleFont, fontSize: "clamp(3.5rem,8vw,6.5rem)", color: "#9c1f52" }}>
+                {event.title.includes(" by ") ? event.title.split(" by ")[0] : event.title}
+              </h1>
+              {event.title.includes(" by ") && (
+                <p className="font-sans text-lg lg:text-xl font-semibold tracking-[0.25em] uppercase mb-4" style={{ color: "#9c1f52" }}>
+                  by {event.title.split(" by ")[1]}
+                </p>
+              )}
+              <p className="mb-8" style={{ fontFamily: event.heroTitleFont, fontSize: "clamp(1.5rem,3vw,2.25rem)", color: "#c23b74" }}>
+                {event.subtitle}
+              </p>
+
+              <div className="flex flex-wrap gap-6 font-sans text-sm mb-10" style={{ color: "#7a2249" }}>
+                <span className="flex items-center gap-2">
+                  <CalendarDays size={15} style={{ color: "#c23b74" }} />
+                  {event.date}
                 </span>
-                <div className="flex flex-wrap gap-4">
-                  {event.partners.map((partner) => (
-                    <PartnerLogo key={partner.name} name={partner.name} logoUrl={partner.logoUrl} accent={theme.accent} size="lg" />
-                  ))}
-                </div>
+                {event.time && (
+                  <span className="flex items-center gap-2">
+                    <Clock size={15} style={{ color: "#c23b74" }} />
+                    {event.time}
+                  </span>
+                )}
+                {event.price && (
+                  <span className="font-semibold" style={{ color: "#9c1f52" }}>R{event.price}</span>
+                )}
+              </div>
+
+              {event.partners && event.partners.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.7 }}
+                  className="mb-10"
+                >
+                  <span className="font-sans text-[10px] font-semibold tracking-[0.35em] uppercase mb-4 block" style={{ color: "#c23b74" }}>
+                    In Partnership With
+                  </span>
+                  <div className="grid grid-cols-4 gap-3 w-full">
+                    {event.partners.map((partner) => (
+                      <PartnerLogo key={partner.name} name={partner.name} logoUrl={partner.logoUrl} accent="#9c1f52" size="lg" monochrome bare />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              <a href="#booking" className="inline-block font-sans text-xs font-semibold tracking-widest uppercase px-10 py-4 rounded-full text-white transition-all"
+                style={{ background: "linear-gradient(135deg, #9c1f52, #c23b74)" }}>
+                {event.ctaLabel ?? "Reserve Your Seat"} →
+              </a>
+            </motion.div>
+
+            {/* Right: photographic still life */}
+            {event.posterImages && event.posterImages.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1, delay: 0.2 }}
+                className="relative h-[420px] lg:h-[560px]"
+              >
+                {event.posterImages.map((img) => (
+                  <img key={img.url} src={img.url} alt={img.alt} className={img.className} />
+                ))}
               </motion.div>
             )}
-          </motion.div>
-        </div>
-
-        {/* Fade to content */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/40 to-transparent" />
-      </section>
-
-      {/* ── Set the Scene (gallery) ── */}
-      {event.galleryImages && event.galleryImages.length > 0 && (
-        <section className="py-20" style={{ background: theme.gradientDark }}>
-          <div className="max-w-6xl mx-auto px-6 lg:px-12">
-            <div className="text-center mb-12">
-              <span className="font-sans text-xs font-semibold tracking-[0.3em] uppercase mb-3 block" style={{ color: theme.accent }}>
-                The Mood
-              </span>
-              <h2 className="font-serif text-3xl lg:text-4xl font-light text-white">Set the scene</h2>
-            </div>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-              {event.galleryImages.map((img, i) => (
-                <motion.div
-                  key={img.url}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1, duration: 0.6 }}
-                  className={`rounded-3xl overflow-hidden flex flex-col ${img.wide ? "col-span-2" : ""}`}
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
-                >
-                  <div className={`${img.wide ? "aspect-[16/10]" : "aspect-[3/4]"} flex items-center justify-center p-6`}>
-                    <img src={img.url} alt={img.caption ?? ""} className="max-w-full max-h-full object-contain" />
-                  </div>
-                  {img.caption && (
-                    <p className="font-serif text-xs italic text-center pb-5 px-3" style={{ color: theme.textLight }}>
-                      {img.caption}
-                    </p>
-                  )}
-                </motion.div>
-              ))}
-            </div>
           </div>
+        </section>
+      ) : (
+        <section
+          className="relative min-h-[85vh] flex flex-col justify-center overflow-hidden"
+          style={{ background: theme.gradient }}
+        >
+          {/* Atmospheric texture overlays */}
+          <div className="absolute inset-0 opacity-30"
+            style={{ backgroundImage: "radial-gradient(ellipse at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.05) 0%, transparent 50%)" }} />
+
+          {/* Back link */}
+          <div className="absolute top-28 left-6 lg:left-12 z-20">
+            <Link href="/events">
+              <motion.button
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="flex items-center gap-2 font-sans text-xs tracking-widest uppercase transition-all"
+                style={{ color: theme.accent, opacity: 0.8 }}
+              >
+                <ChevronLeft size={14} />
+                All Events
+              </motion.button>
+            </Link>
+          </div>
+
+          {/* WOT logo watermark */}
+          <div className="absolute top-1/2 right-12 -translate-y-1/2 opacity-[0.06] pointer-events-none hidden lg:block">
+            <img src="/wot-logo.png" alt="" className="w-80 h-80 object-contain" style={{ mixBlendMode: "screen" }} />
+          </div>
+
+          {/* Hero content */}
+          <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 py-28">
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <span
+                className="font-sans text-xs font-semibold tracking-[0.35em] uppercase mb-4 block"
+                style={{ color: theme.accent }}
+              >
+                {event.category} · {event.date}
+              </span>
+              <h1
+                className="font-serif font-light leading-[1.05] mb-4"
+                style={{ fontSize: "clamp(3rem,7vw,6rem)", color: "rgba(255,255,255,0.96)" }}
+              >
+                {event.title}
+              </h1>
+              <p className="font-serif text-xl lg:text-2xl font-light mb-8 max-w-2xl leading-relaxed"
+                style={{ color: theme.accent, fontStyle: "italic" }}>
+                {event.subtitle}
+              </p>
+              <div className="flex flex-wrap gap-5 font-sans text-sm" style={{ color: theme.textLight }}>
+                <span className="flex items-center gap-2">
+                  <CalendarDays size={14} style={{ color: theme.accent }} />
+                  {event.date}
+                </span>
+                {event.time && (
+                  <span className="flex items-center gap-2">
+                    <Clock size={14} style={{ color: theme.accent }} />
+                    {event.time}
+                  </span>
+                )}
+                <span className="flex items-center gap-2">
+                  <MapPin size={14} style={{ color: theme.accent }} />
+                  {event.location}
+                </span>
+              </div>
+
+              {event.partners && event.partners.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.7 }}
+                  className="mt-10"
+                >
+                  <span
+                    className="font-sans text-[10px] font-semibold tracking-[0.35em] uppercase mb-4 block"
+                    style={{ color: theme.accent }}
+                  >
+                    In Partnership With
+                  </span>
+                  <div className="flex flex-wrap gap-4">
+                    {event.partners.map((partner) => (
+                      <PartnerLogo key={partner.name} name={partner.name} logoUrl={partner.logoUrl} accent={theme.accent} size="lg" />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          </div>
+
+          {/* Fade to content */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black/40 to-transparent" />
         </section>
       )}
 
@@ -477,7 +554,7 @@ export default function EventDetail() {
       )}
 
       {/* ── Details + Booking ── */}
-      <section className="py-24" style={{ background: theme.gradientDark }}>
+      <section id="booking" className="py-24 scroll-mt-24" style={{ background: theme.gradientDark }}>
         <div className="max-w-6xl mx-auto px-6 lg:px-12">
           <div className="grid lg:grid-cols-2 gap-16 items-start">
 

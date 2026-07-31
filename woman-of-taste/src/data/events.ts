@@ -37,7 +37,9 @@ export interface Event {
   };
   cardTagline: string;
   partners?: { name: string; logoUrl: string }[];
-  galleryImages?: { url: string; caption?: string; wide?: boolean }[];
+  heroStyle?: "gradient" | "poster";
+  heroTitleFont?: string;
+  posterImages?: { url: string; alt: string; className?: string }[];
 }
 
 export const events: Event[] = [
@@ -113,13 +115,13 @@ export const events: Event[] = [
       { name: "CORE Reformer Pilates", logoUrl: "/images/partners/core.png" },
       { name: "Cuvée Zero de Bain", logoUrl: "/images/partners/cuvee-zero-de-bain.jpg" },
     ],
-    galleryImages: [
-      { url: "/images/events/la-femme/champagne-glass.png", caption: "Rosé, poured all afternoon" },
-      { url: "/images/events/la-femme/pink-diary.png", caption: "A moment to write it down" },
-      { url: "/images/events/la-femme/rose-bouquet.png", caption: "Pink and white, everywhere you look" },
-      { url: "/images/events/la-femme/candle-votive.png", caption: "Candlelight for the golden hour" },
-      { url: "/images/events/la-femme/spa-massage.png", caption: "Personalised body scrub with PORE Aesthetic Clinic", wide: true },
-      { url: "/images/events/la-femme/reformer-pilates.png", caption: "Move with CORE Reformer Pilates", wide: true },
+    heroStyle: "poster",
+    heroTitleFont: "'Alex Brush', cursive",
+    posterImages: [
+      { url: "/images/events/la-femme/rose-bouquet.png", alt: "Pink and white rose bouquet", className: "absolute top-0 right-0 w-[62%] opacity-95" },
+      { url: "/images/events/la-femme/champagne-glass.png", alt: "Glass of rosé", className: "absolute bottom-0 left-[30%] w-[34%]" },
+      { url: "/images/events/la-femme/pink-diary.png", alt: "Pink diary with pearl bow", className: "absolute bottom-0 left-0 w-[44%]" },
+      { url: "/images/events/la-femme/candle-votive.png", alt: "Rose gold candle votive", className: "absolute bottom-[4%] right-[4%] w-[24%]" },
     ],
     theme: {
       season: "la-femme",
