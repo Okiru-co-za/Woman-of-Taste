@@ -95,7 +95,7 @@ export const events: Event[] = [
     description:
       "An afternoon soirée in shades of pink and white, featuring a two-course set menu, a crafted cocktail flight, and a full pampering experience at Luna Lusa, Kyalami.",
     story: `Some afternoons ask you to arrive fully, dressed in softness, ready to be poured into.\n\nLa Femme by Luna Lusa is Woman of Taste's ode to that kind of afternoon. Pink and white as far as the eye can see. Prosecco that never stops arriving. A room full of women who came to be celebrated, not just to celebrate.\n\nThis is not just lunch. This is a whole afternoon designed around the art of being a woman of taste, savoured slowly, from noon until the light turns golden.`,
-    storyAct2: `Woman of Taste has partnered with Luna Lusa in Kyalami, alongside DineXp, PORE Aesthetic Clinic, CORE Reformer Pilates, and Cuvée Zero de Bain, to curate a soirée that goes far beyond the table. Settle in for a two-course set menu and a crafted cocktail flight, top up your glass with complimentary Italian prosecco, and drift between a personalised body scrub station and a mist & hydration booth between courses.\n\nCome dressed in shades of pink and white. Bring the version of yourself that's ready to be looked after for a change.`,
+    storyAct2: `Woman of Taste has partnered with Luna Lusa in Kyalami, alongside DineXp, PORE Aesthetic Clinic, CORE Reformer Pilates, and Cuvée Zero Bedin, to curate a soirée that goes far beyond the table. Settle in for a two-course set menu and a crafted cocktail flight, top up your glass with complimentary Italian prosecco, and drift between a personalised body scrub station and a mist & hydration booth between courses.\n\nCome dressed in shades of pink and white. Bring the version of yourself that's ready to be looked after for a change.`,
     type: "upcoming",
     category: "Women's Soirée",
     ctaLabel: "Reserve Your Seat",
@@ -107,7 +107,7 @@ export const events: Event[] = [
     highlights: [
       { icon: "🍽️", title: "2-Course Set Menu", description: "A seasonal two-course menu, plated for a leisurely afternoon" },
       { icon: "🍸", title: "Cocktail Flight", description: "A crafted flight of signature cocktails to sip your way through" },
-      { icon: "🥂", title: "Italian Prosecco", description: "Complimentary Italian prosecco, courtesy of Cuvée Zero de Bain" },
+      { icon: "🥂", title: "Italian Prosecco", description: "Complimentary Italian prosecco, courtesy of Cuvée Zero Bedin" },
       { icon: "🧴", title: "Body Scrub Station", description: "A personalised body scrub station, courtesy of PORE Aesthetic Clinic" },
       { icon: "📸", title: "Professional Photographer", description: "A professional photographer capturing every shade of the afternoon" },
       { icon: "💦", title: "Mist & Hydration Booth", description: "A mist & hydration booth to keep you glowing from noon to close" },
@@ -116,7 +116,7 @@ export const events: Event[] = [
       { name: "DineXp", logoUrl: "/images/partners/dinexp.png" },
       { name: "PORE Aesthetic Clinic", logoUrl: "/images/partners/pore.png" },
       { name: "CORE Reformer Pilates", logoUrl: "/images/partners/core.png" },
-      { name: "Cuvée Zero de Bain", logoUrl: "/images/partners/cuvee-zero-de-bain.svg" },
+      { name: "Cuvée Zero Bedin", logoUrl: "/images/partners/cuvee-zero-de-bain.svg" },
     ],
     heroStyle: "poster",
     heroTitleFont: "'Alex Brush', cursive",
