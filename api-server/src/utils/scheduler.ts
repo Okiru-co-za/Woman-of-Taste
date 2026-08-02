@@ -48,6 +48,7 @@ async function runFollowup1() {
         email: booking.email,
         phone: booking.phone,
         dietary: booking.dietary,
+        eventId: booking.eventId,
         eventTitle: booking.eventTitle,
         eventDate: booking.eventDate,
         eventLocation: booking.eventLocation,

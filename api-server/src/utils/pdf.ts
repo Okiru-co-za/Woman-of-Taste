@@ -1,6 +1,7 @@
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
+import { getBankDetailsForEvent } from "./eventBankConfig.js";
 
 interface InvoiceData {
   invoiceNumber: string;
@@ -9,6 +10,7 @@ interface InvoiceData {
   email: string;
   phone: string;
   dietary?: string | null;
+  eventId?: string | null;
   eventTitle: string;
   eventDate: string;
   eventLocation: string;
@@ -61,13 +63,8 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<string> {
     return found;
   })();
 
-  const bankName = process.env["BANK_NAME"] ?? "Investec Bank Limited";
-  const accountName = process.env["BANK_ACCOUNT_NAME"] ?? "Woman of Taste";
-  const accountNumber = process.env["BANK_ACCOUNT_NUMBER"] ?? "10013145814";
-  const branchCode = process.env["BANK_BRANCH_CODE"] ?? "580105";
-  const accountType = process.env["BANK_ACCOUNT_TYPE"] ?? "Current Account";
-  const branchName = process.env["BANK_BRANCH_NAME"] ?? "100 Grayston Drive, Sandton";
-  const swiftCode = process.env["BANK_SWIFT_CODE"] ?? "IVESZAJJ";
+  const { bankName, accountName, accountNumber, branchCode, accountType, branchName, swiftCode } =
+    getBankDetailsForEvent(data.eventId);
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 50 });

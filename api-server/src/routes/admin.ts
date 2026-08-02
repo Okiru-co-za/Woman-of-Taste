@@ -7,7 +7,7 @@ import { db } from "@workspace/db";
 import { bookingsTable } from "@workspace/db/schema";
 import { createTransporter } from "../utils/mailer.js";
 import { generateInvoicePdf } from "../utils/pdf.js";
-import { buildFollowup1Email, buildInvoiceConfirmationEmail, buildDeclineEmail, buildPaymentConfirmedEmail, buildCinemaTicketEmail, buildOverdueReminderEmail, buildNonPaymentCancellationEmail } from "../utils/invoiceEmail.js";
+import { buildFollowup1Email, buildInvoiceConfirmationEmail, buildDeclineEmail, buildPaymentConfirmedEmail, buildTicketEmail, buildOverdueReminderEmail, buildNonPaymentCancellationEmail } from "../utils/invoiceEmail.js";
 import { getEventArrivalDetails } from "../utils/eventArrivalConfig.js";
 import { sendWeeklyContentReminder } from "../utils/contentReminder.js";
 import { sendMonthlySocialReminder } from "../utils/socialReminder.js";
@@ -126,7 +126,7 @@ adminRouter.post("/admin/bookings/:id/paid", authMiddleware, async (req, res) =>
         color: { dark: "#0d0d0d", light: "#ffffff" },
       });
 
-      const { subject, html } = buildCinemaTicketEmail({
+      const { subject, html } = buildTicketEmail({
         invoiceNumber: booking.invoiceNumber,
         firstName: booking.firstName,
         surname: booking.surname,
@@ -389,6 +389,7 @@ adminRouter.post("/admin/bookings/:id/overdue", authMiddleware, async (req, res)
     email: booking.email,
     phone: booking.phone,
     dietary: booking.dietary,
+    eventId: booking.eventId,
     eventTitle: booking.eventTitle,
     eventDate: booking.eventDate,
     eventLocation: booking.eventLocation,
@@ -436,6 +437,7 @@ adminRouter.post("/admin/bookings/:id/followup", authMiddleware, async (req, res
     email: booking.email,
     phone: booking.phone,
     dietary: booking.dietary,
+    eventId: booking.eventId,
     eventTitle: booking.eventTitle,
     eventDate: booking.eventDate,
     eventLocation: booking.eventLocation,
@@ -475,7 +477,7 @@ adminRouter.post("/admin/bookings/:id/approve", authMiddleware, async (req, res)
 
   const emailData = {
     invoiceNumber: booking.invoiceNumber, firstName: booking.firstName, surname: booking.surname,
-    email: booking.email, phone: booking.phone, dietary: booking.dietary,
+    email: booking.email, phone: booking.phone, dietary: booking.dietary, eventId: booking.eventId,
     eventTitle: booking.eventTitle, eventDate: booking.eventDate, eventLocation: booking.eventLocation,
     quantity: booking.quantity, pricePerTicket: booking.pricePerTicket, totalAmount: booking.totalAmount,
   };

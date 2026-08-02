@@ -162,9 +162,9 @@ export default function TicketPage() {
               <img src="/wot-logo.png" alt="WOT" style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover" }} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
             </div>
 
-            {/* CINEMA TICKET */}
+            {/* EVENT TICKET */}
             <div style={{ fontFamily: "Raleway, sans-serif", fontSize: "10px", letterSpacing: "0.35em", textTransform: "uppercase", color: "rgba(201,169,110,0.6)", marginBottom: 6 }}>
-              CINEMA TICKET
+              EVENT TICKET
             </div>
             <div style={{ fontFamily: "Cormorant Garamond, Georgia, serif", fontSize: "clamp(18px, 4vw, 26px)", fontWeight: 700, color: "#c9a96e", letterSpacing: "0.05em", textTransform: "uppercase", lineHeight: 1.2, marginBottom: 8 }}>
               {ticket.eventTitle}

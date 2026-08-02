@@ -116,7 +116,7 @@ export const events: Event[] = [
       { name: "DineXp", logoUrl: "/images/partners/dinexp.png" },
       { name: "PORE Aesthetic Clinic", logoUrl: "/images/partners/pore.png" },
       { name: "CORE Reformer Pilates", logoUrl: "/images/partners/core.png" },
-      { name: "Cuvée Zero de Bain", logoUrl: "/images/partners/cuvee-zero-de-bain.png" },
+      { name: "Cuvée Zero de Bain", logoUrl: "/images/partners/cuvee-zero-de-bain.svg" },
     ],
     heroStyle: "poster",
     heroTitleFont: "'Alex Brush', cursive",

@@ -1,4 +1,5 @@
 import type { EventArrivalDetails } from "./eventArrivalConfig.js";
+import { getBankDetailsForEvent } from "./eventBankConfig.js";
 
 function logoUrl(): string {
   const base = process.env["APP_URL"] ?? "https://womanoftaste.co.za";
@@ -50,6 +51,7 @@ interface InvoiceEmailData {
   email: string;
   phone: string;
   dietary?: string | null;
+  eventId?: string | null;
   eventTitle: string;
   eventDate: string;
   eventLocation: string;
@@ -177,12 +179,8 @@ export function buildInvoiceConfirmationEmail(
   data: InvoiceEmailData,
   dueDate: string,
 ): string {
-  const bankName = process.env["BANK_NAME"] ?? "Investec Bank Limited";
-  const accountName = process.env["BANK_ACCOUNT_NAME"] ?? "Woman of Taste";
-  const accountNumber = process.env["BANK_ACCOUNT_NUMBER"] ?? "10013145814";
-  const branchCode = process.env["BANK_BRANCH_CODE"] ?? "580105";
-  const accountType = process.env["BANK_ACCOUNT_TYPE"] ?? "Current Account";
-  const swiftCode = process.env["BANK_SWIFT_CODE"] ?? "IVESZAJJ";
+  const { bankName, accountName, accountNumber, branchCode, accountType, swiftCode } =
+    getBankDetailsForEvent(data.eventId);
 
   return `<!DOCTYPE html>
 <html>
@@ -311,10 +309,7 @@ export function buildNonPaymentCancellationEmail(data: InvoiceEmailData): string
 }
 
 export function buildOverdueReminderEmail(data: InvoiceEmailData): string {
-  const bankName = process.env["BANK_NAME"] ?? "Investec Bank Limited";
-  const accountName = process.env["BANK_ACCOUNT_NAME"] ?? "Woman of Taste";
-  const accountNumber = process.env["BANK_ACCOUNT_NUMBER"] ?? "10013145814";
-  const branchCode = process.env["BANK_BRANCH_CODE"] ?? "580105";
+  const { bankName, accountName, accountNumber, branchCode } = getBankDetailsForEvent(data.eventId);
 
   return `<!DOCTYPE html>
 <html>
@@ -362,10 +357,7 @@ export function buildOverdueReminderEmail(data: InvoiceEmailData): string {
 }
 
 export function buildFollowup1Email(data: InvoiceEmailData): string {
-  const bankName = process.env["BANK_NAME"] ?? "Investec Bank Limited";
-  const accountName = process.env["BANK_ACCOUNT_NAME"] ?? "Woman of Taste";
-  const accountNumber = process.env["BANK_ACCOUNT_NUMBER"] ?? "10013145814";
-  const branchCode = process.env["BANK_BRANCH_CODE"] ?? "580105";
+  const { bankName, accountName, accountNumber, branchCode } = getBankDetailsForEvent(data.eventId);
 
   return `<!DOCTYPE html>
 <html>
@@ -663,7 +655,7 @@ export function buildPaymentConfirmedEmail(
   return { subject, html };
 }
 
-export interface CinemaTicketData {
+export interface TicketEmailData {
   invoiceNumber: string;
   firstName: string;
   surname: string;
@@ -677,13 +669,13 @@ export interface CinemaTicketData {
   ticketPageUrl: string;
 }
 
-export function buildCinemaTicketEmail(data: CinemaTicketData): { subject: string; html: string } {
-  const subject = `🎬 Your Cinema Ticket — ${data.eventTitle}`;
+export function buildTicketEmail(data: TicketEmailData): { subject: string; html: string } {
+  const subject = `🎟️ Your Ticket — ${data.eventTitle}`;
   const base = process.env["APP_URL"] ?? "https://womanoftaste.co.za";
   const logoSrc = `${base}/wot-logo.png`;
 
   const html = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Your Cinema Ticket — ${data.eventTitle}</title>
+<title>Your Ticket — ${data.eventTitle}</title>
 </head>
 <body style="margin:0;padding:0;background:#1a0a0a;font-family:Georgia,serif;">
 <div style="max-width:640px;margin:0 auto;padding:32px 16px;">
@@ -714,7 +706,7 @@ export function buildCinemaTicketEmail(data: CinemaTicketData): { subject: strin
           <img src="${logoSrc}" alt="WOT" width="56" height="56" style="width:56px;height:56px;border-radius:50%;background:rgba(201,169,110,0.1);padding:4px;display:block;margin:0 auto;" />
         </div>
 
-        <div style="font-family:Arial,sans-serif;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:rgba(201,169,110,0.6);margin-bottom:6px;">CINEMA TICKET</div>
+        <div style="font-family:Arial,sans-serif;font-size:10px;letter-spacing:0.35em;text-transform:uppercase;color:rgba(201,169,110,0.6);margin-bottom:6px;">EVENT TICKET</div>
         <div style="font-size:22px;font-weight:bold;color:#c9a96e;letter-spacing:0.06em;text-transform:uppercase;line-height:1.15;margin-bottom:10px;">${data.eventTitle}</div>
         <div style="font-family:Arial,sans-serif;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:rgba(201,169,110,0.55);margin-bottom:20px;">EVENT BY WOMAN OF TASTE</div>
 
