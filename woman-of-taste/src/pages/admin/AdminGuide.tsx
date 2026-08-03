@@ -7,8 +7,13 @@ interface GuideTip {
   title: string;
   body: string;
 }
+interface GuideSection {
+  heading: string;
+  intro: string;
+  tips: GuideTip[];
+}
 
-const GUIDE_DATA: Record<string, { heading: string; intro: string; tips: GuideTip[] }> = {
+const GUIDE_DATA: Record<string, GuideSection> = {
   "/admin": {
     heading: "Welcome to Your Dashboard",
     intro: "This is your command centre. Here's what you're looking at:",
@@ -94,11 +99,14 @@ const GUIDE_DATA: Record<string, { heading: string; intro: string; tips: GuideTi
   },
 };
 
-function getGuide(path: string) {
-  const exact = GUIDE_DATA[path];
-  if (exact) return exact;
+// Every path maps to a guide *section key* (one of the literal keys in
+// GUIDE_DATA) — sub-routes like /admin/blog/new or /admin/blog/generate all
+// resolve to the "/admin/blog" section so they share one "seen" entry instead
+// of each re-triggering the same guide the first time you visit them.
+function getGuideKey(path: string): string | null {
+  if (GUIDE_DATA[path]) return path;
   for (const key of Object.keys(GUIDE_DATA)) {
-    if (key !== "/admin" && path.startsWith(key)) return GUIDE_DATA[key];
+    if (key !== "/admin" && path.startsWith(key)) return key;
   }
   return null;
 }
@@ -108,16 +116,18 @@ const SEEN_KEY = "wot_guide_seen";
 export function useGuide() {
   const [open, setOpen] = useState(false);
   const [location] = useLocation();
-  const guide = getGuide(location);
+  const guideKey = getGuideKey(location);
+  const guide = guideKey ? GUIDE_DATA[guideKey] : null;
 
   useEffect(() => {
+    if (!guideKey) return;
     const seen = JSON.parse(localStorage.getItem(SEEN_KEY) ?? "{}");
-    if (!seen[location] && guide) {
+    if (!seen[guideKey]) {
       setTimeout(() => setOpen(true), 800);
-      seen[location] = true;
+      seen[guideKey] = true;
       localStorage.setItem(SEEN_KEY, JSON.stringify(seen));
     }
-  }, [location]);
+  }, [guideKey]);
 
   return { open, setOpen, guide };
 }
@@ -125,7 +135,7 @@ export function useGuide() {
 export default function AdminGuide({ open, onClose, guide }: {
   open: boolean;
   onClose: () => void;
-  guide: ReturnType<typeof getGuide>;
+  guide: GuideSection | null;
 }) {
   if (!open || !guide) return null;
 
@@ -194,7 +204,7 @@ export default function AdminGuide({ open, onClose, guide }: {
         {/* Footer */}
         <div style={{ padding: "1rem 1.5rem", borderTop: "1px solid #eee", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontFamily: "Raleway, sans-serif", fontSize: "0.72rem", color: "#aaa" }}>
-            This guide auto-opens on first visit per page
+            This guide auto-opens once per section, then stays dismissed
           </span>
           <button onClick={() => { localStorage.removeItem(SEEN_KEY); }} style={{ fontFamily: "Raleway, sans-serif", fontSize: "0.72rem", color: "#aaa", background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
             Reset guides

@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import {
   contactsTable, bookingsTable, emailCampaignsTable, emailSendsTable,
   blogPostsTable, activityLogTable, adminSettingsTable,
+  refundRequestsTable, contentPipelineWeeksTable,
 } from "@workspace/db/schema";
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
@@ -46,6 +47,80 @@ statsRouter.get("/admin/stats", authMiddleware, async (_req, res) => {
 statsRouter.get("/admin/activity", authMiddleware, async (_req, res) => {
   const activity = await db.select().from(activityLogTable).orderBy(desc(activityLogTable.createdAt)).limit(20);
   return res.json({ ok: true, activity });
+});
+
+// GET /api/admin/dashboard — urgent action items + trend data for the home tab
+statsRouter.get("/admin/dashboard", authMiddleware, async (_req, res) => {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const [pendingBookings, [pendingBookingsCount]] = await Promise.all([
+    db.select().from(bookingsTable).where(eq(bookingsTable.status, "PENDING"))
+      .orderBy(desc(bookingsTable.createdAt)).limit(8),
+    db.select({ count: count() }).from(bookingsTable).where(eq(bookingsTable.status, "PENDING")),
+  ]);
+
+  const [pendingRefunds, [pendingRefundsCount]] = await Promise.all([
+    db.select().from(refundRequestsTable).where(eq(refundRequestsTable.status, "SUBMITTED"))
+      .orderBy(desc(refundRequestsTable.submittedAt)).limit(8),
+    db.select({ count: count() }).from(refundRequestsTable).where(eq(refundRequestsTable.status, "SUBMITTED")),
+  ]);
+
+  const [blogDrafts, [blogDraftsCount]] = await Promise.all([
+    db.select().from(blogPostsTable).where(eq(blogPostsTable.status, "draft"))
+      .orderBy(desc(blogPostsTable.updatedAt)).limit(8),
+    db.select({ count: count() }).from(blogPostsTable).where(eq(blogPostsTable.status, "draft")),
+  ]);
+
+  const [pendingContent, [pendingContentCount]] = await Promise.all([
+    db.select().from(contentPipelineWeeksTable).where(eq(contentPipelineWeeksTable.status, "pending_approval"))
+      .orderBy(desc(contentPipelineWeeksTable.createdAt)).limit(8),
+    db.select({ count: count() }).from(contentPipelineWeeksTable).where(eq(contentPipelineWeeksTable.status, "pending_approval")),
+  ]);
+
+  const recentMessages = await db.select().from(contactsTable)
+    .where(eq(contactsTable.source, "contact-form"))
+    .orderBy(desc(contactsTable.createdAt)).limit(6);
+
+  // Bookings + revenue per day, last 30 days
+  const recentBookings = await db.select({
+    createdAt: bookingsTable.createdAt,
+    totalAmount: bookingsTable.totalAmount,
+    paidAt: bookingsTable.paidAt,
+  }).from(bookingsTable).where(gte(bookingsTable.createdAt, thirtyDaysAgo));
+
+  const byDay = new Map<string, { date: string; bookings: number; revenue: number }>();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 86400000);
+    const key = d.toISOString().slice(0, 10);
+    byDay.set(key, { date: key, bookings: 0, revenue: 0 });
+  }
+  for (const b of recentBookings) {
+    const key = new Date(b.createdAt).toISOString().slice(0, 10);
+    const row = byDay.get(key);
+    if (row) {
+      row.bookings += 1;
+      if (b.paidAt) row.revenue += b.totalAmount;
+    }
+  }
+
+  const statusCounts = await db.select({ status: bookingsTable.status, count: count() })
+    .from(bookingsTable).groupBy(bookingsTable.status);
+
+  return res.json({
+    ok: true,
+    actionItems: {
+      pendingBookings: { count: Number(pendingBookingsCount?.count ?? 0), items: pendingBookings },
+      pendingRefunds: { count: Number(pendingRefundsCount?.count ?? 0), items: pendingRefunds },
+      blogDrafts: { count: Number(blogDraftsCount?.count ?? 0), items: blogDrafts },
+      pendingContent: { count: Number(pendingContentCount?.count ?? 0), items: pendingContent },
+      recentMessages: { items: recentMessages },
+    },
+    charts: {
+      bookingsTrend: Array.from(byDay.values()),
+      statusBreakdown: statusCounts.map(s => ({ status: s.status, count: Number(s.count) })),
+    },
+  });
 });
 
 // GET /api/admin/settings — all settings

@@ -22,24 +22,29 @@ export const WOMAN_OF_TASTE_DEFAULT: BankDetails = {
   swiftCode: "IVESZAJJ",
 };
 
-// La Femme by Luna Lusa settled through its own FNB account (BANK_* env vars on
-// Railway) before per-event overrides existed below. Kept as a seed so this one
-// event keeps working until an admin confirms or edits it in the admin panel.
+// La Femme by Luna Lusa settles through its own FNB account rather than Woman
+// of Taste's default Investec account. This is this one event's base default
+// (shown in the admin panel as "the default" for that event specifically) —
+// an admin can still override it per event from the Events tab.
 const LUNA_LUSA_EVENT_ID = "la-femme-luna-lusa-aug-2026";
+const LUNA_LUSA_DEFAULT: BankDetails = {
+  bankName: "First National Bank",
+  accountName: "Luna Lusa",
+  accountNumber: "63212660012",
+  branchCode: "255355",
+  accountType: "Gold Business Account",
+  branchName: "My Branch",
+  swiftCode: "FIRNZAJJ",
+};
 
-function lunaLusaSeed(): BankDetails {
-  const accountName = process.env["BANK_ACCOUNT_NAME"] ?? "Elsweyr (Pty) Ltd";
-  return {
-    bankName: process.env["BANK_NAME"] ?? "First National Bank",
-    accountName: accountName.toLowerCase().includes("luna lusa")
-      ? accountName
-      : `${accountName} trading as Luna Lusa`,
-    accountNumber: process.env["BANK_ACCOUNT_NUMBER"] ?? "63212660012",
-    branchCode: process.env["BANK_BRANCH_CODE"] ?? "255355",
-    accountType: process.env["BANK_ACCOUNT_TYPE"] ?? "Gold Business Account",
-    branchName: process.env["BANK_BRANCH_NAME"] ?? "My Branch",
-    swiftCode: process.env["BANK_SWIFT_CODE"] ?? "FIRNZAJJ",
-  };
+function baseDefaultForEvent(eventId?: string | null): BankDetails {
+  return eventId === LUNA_LUSA_EVENT_ID ? LUNA_LUSA_DEFAULT : WOMAN_OF_TASTE_DEFAULT;
+}
+
+// The base default bank details for an event before any admin override —
+// what the admin panel's "Use the default" option displays.
+export function getEventBaseDefault(eventId: string): BankDetails {
+  return baseDefaultForEvent(eventId);
 }
 
 function settingsKey(eventId: string): string {
@@ -75,6 +80,5 @@ export async function setEventBankOverride(eventId: string, details: BankDetails
 export async function getBankDetailsForEvent(eventId?: string | null): Promise<BankDetails> {
   if (!eventId) return WOMAN_OF_TASTE_DEFAULT;
   const override = await getEventBankOverride(eventId);
-  if (override) return override;
-  return eventId === LUNA_LUSA_EVENT_ID ? lunaLusaSeed() : WOMAN_OF_TASTE_DEFAULT;
+  return override ?? baseDefaultForEvent(eventId);
 }

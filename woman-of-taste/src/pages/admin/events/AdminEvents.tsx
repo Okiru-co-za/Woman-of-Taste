@@ -4,8 +4,10 @@ import { useAdminAuth, adminFetch } from "../AdminLogin";
 import AdminLayout from "../AdminLayout";
 import {
   Calendar, MapPin, ArrowRight, Plus, X, Check, Flag,
-  Target, DollarSign, Users, ChevronDown, ChevronUp,
+  Target, DollarSign, Users, ChevronDown, ChevronUp, Landmark,
 } from "lucide-react";
+import { events as publicEvents } from "@/data/events";
+import BankDetailsPanel from "./BankDetailsPanel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface EventProject {
@@ -122,6 +124,24 @@ function NewEventModal({ onClose, onCreate }: { onClose: () => void; onCreate: (
   );
 }
 
+// ── Bank Details Modal ────────────────────────────────────────────────────────
+function BankDetailsModal({ eventId, eventTitle, onClose }: { eventId: string; eventTitle: string; onClose: () => void }) {
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
+      <div style={{ background: "white", borderRadius: 16, width: "100%", maxWidth: 560, padding: "2rem", boxShadow: "0 20px 60px rgba(0,0,0,0.15)", maxHeight: "90vh", overflowY: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
+          <div>
+            <h2 style={{ margin: 0, fontFamily: SERIF, fontSize: "1.3rem", color: "hsl(225,50%,22%)" }}>Payment Details</h2>
+            <p style={{ margin: "4px 0 0", fontFamily: FONT, fontSize: "0.78rem", color: "#999" }}>{eventTitle}</p>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af" }}><X size={18} /></button>
+        </div>
+        <BankDetailsPanel eventId={eventId} />
+      </div>
+    </div>
+  );
+}
+
 // ── Project Card ──────────────────────────────────────────────────────────────
 function ProjectCard({ p, onDelete }: { p: EventProject; onDelete: () => void }) {
   const sm = STATUS_META[p.status] ?? STATUS_META.planning;
@@ -206,6 +226,7 @@ export default function AdminEvents() {
   const [loadingE, setLoadingE] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showPast, setShowPast] = useState(false);
+  const [bankModalEvent, setBankModalEvent] = useState<{ id: string; title: string } | null>(null);
 
   async function loadProjects() {
     const d = await adminFetch("/admin/event-projects").then(r => r.json());
@@ -223,6 +244,13 @@ export default function AdminEvents() {
   return (
     <AdminLayout title="Events">
       {showModal && <NewEventModal onClose={() => setShowModal(false)} onCreate={loadProjects} />}
+      {bankModalEvent && (
+        <BankDetailsModal
+          eventId={bankModalEvent.id}
+          eventTitle={bankModalEvent.title}
+          onClose={() => setBankModalEvent(null)}
+        />
+      )}
 
       <div style={{ maxWidth: 960 }}>
         {/* Header */}
@@ -254,6 +282,32 @@ export default function AdminEvents() {
           )}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
             {projects.map(p => <ProjectCard key={p.id} p={p} onDelete={loadProjects} />)}
+          </div>
+        </div>
+
+        {/* Public Events — bank details */}
+        <div style={{ marginBottom: "2rem" }}>
+          <h3 style={{ margin: "0 0 0.85rem", fontFamily: FONT, fontSize: "0.72rem", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            Public Events — Payment Details ({publicEvents.length})
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+            {publicEvents.map(e => (
+              <div key={e.id} style={{ background: "white", borderRadius: 12, padding: "0.9rem 1.1rem", border: "1px solid #eee", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontFamily: SERIF, fontSize: "0.98rem", fontWeight: 600, color: "hsl(225,50%,22%)" }}>{e.title}</div>
+                  <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: 3 }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: FONT, fontSize: "0.72rem", color: "#9ca3af" }}><Calendar size={11} />{e.date}</span>
+                    <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: FONT, fontSize: "0.72rem", color: "#9ca3af" }}><MapPin size={11} />{e.location}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setBankModalEvent({ id: e.id, title: e.title })}
+                  style={BTN("#f3f4f6", "#374151")}
+                >
+                  <Landmark size={14} /> Bank Details
+                </button>
+              </div>
+            ))}
           </div>
         </div>
 

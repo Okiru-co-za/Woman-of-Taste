@@ -3,59 +3,56 @@ import { Link, useLocation } from "wouter";
 import { useAdminAuth } from "./AdminLogin";
 import {
   LayoutDashboard, Users, Mail, BookOpen, BarChart2, Settings,
-  CalendarCheck, Menu, X, LogOut, ChevronRight, HelpCircle, ScanLine, Share2, MapPin, RotateCcw, TrendingUp, UserCheck, Clipboard,
+  CalendarCheck, Menu, X, LogOut, ChevronRight, HelpCircle, Clipboard,
 } from "lucide-react";
 import AdminGuide, { useGuide } from "./AdminGuide";
 import { useIsMobile } from "../../hooks/use-mobile";
 
 interface NavItem { label: string; icon: React.ReactNode; href: string; children?: { label: string; href: string }[] }
 
+// Grouped so related sections share one collapsible entry instead of each
+// living at the top level — fewer things to scan to find your way around.
 const NAV: NavItem[] = [
   { label: "Dashboard", icon: <LayoutDashboard size={16} />, href: "/admin" },
-  { label: "Members", icon: <UserCheck size={16} />, href: "/admin/profiles" },
+  {
+    label: "People", icon: <Users size={16} />, href: "/admin/profiles",
+    children: [
+      { label: "Members", href: "/admin/profiles" },
+      { label: "Contacts", href: "/admin/contacts" },
+    ],
+  },
   { label: "Events", icon: <CalendarCheck size={16} />, href: "/admin/events" },
-  { label: "Contacts", icon: <Users size={16} />, href: "/admin/contacts" },
   {
-    label: "Email", icon: <Mail size={16} />, href: "/admin/email",
-    children: [
-      { label: "Compose", href: "/admin/email/compose" },
-      { label: "History", href: "/admin/email/history" },
-      { label: "Drafts", href: "/admin/email/drafts" },
-      { label: "Templates", href: "/admin/email/templates" },
-      { label: "✨ Generate", href: "/admin/email/generate" },
-    ],
-  },
-  {
-    label: "Blog", icon: <BookOpen size={16} />, href: "/admin/blog",
-    children: [
-      { label: "All Posts", href: "/admin/blog" },
-      { label: "New Post", href: "/admin/blog/new" },
-      { label: "✨ Generate", href: "/admin/blog/generate" },
-    ],
-  },
-  {
-    label: "Places", icon: <MapPin size={16} />, href: "/admin/places",
-    children: [
-      { label: "All Places", href: "/admin/places" },
-      { label: "Add New Place", href: "/admin/places/new" },
-    ],
-  },
-  { label: "Social Media", icon: <Share2 size={16} />, href: "/admin/social" },
-  {
-    label: "✨ Content Engine", icon: <TrendingUp size={16} />, href: "/admin/content-engine",
-    children: [
-      { label: "Direction Settings", href: "/admin/content-engine" },
-      { label: "Weekly Pipeline", href: "/admin/content-engine/pipeline" },
-      { label: "SEO Ideas", href: "/admin/content-engine/seo" },
-    ],
-  },
-  {
-    label: "Project Management", icon: <Clipboard size={16} />, href: "/admin/bookings",
+    label: "Bookings & Finance", icon: <Clipboard size={16} />, href: "/admin/bookings",
     children: [
       { label: "Bookings", href: "/admin/bookings" },
       { label: "Attendance", href: "/admin/attendance" },
       { label: "Refunds", href: "/admin/refunds" },
       { label: "Finance", href: "/admin/finance" },
+    ],
+  },
+  {
+    label: "Content", icon: <BookOpen size={16} />, href: "/admin/blog",
+    children: [
+      { label: "All Blog Posts", href: "/admin/blog" },
+      { label: "New Blog Post", href: "/admin/blog/new" },
+      { label: "✨ Generate Post", href: "/admin/blog/generate" },
+      { label: "All Places", href: "/admin/places" },
+      { label: "Add New Place", href: "/admin/places/new" },
+      { label: "Content Direction", href: "/admin/content-engine" },
+      { label: "Weekly Pipeline", href: "/admin/content-engine/pipeline" },
+      { label: "SEO Ideas", href: "/admin/content-engine/seo" },
+    ],
+  },
+  {
+    label: "Marketing", icon: <Mail size={16} />, href: "/admin/email",
+    children: [
+      { label: "Compose Email", href: "/admin/email/compose" },
+      { label: "Email History", href: "/admin/email/history" },
+      { label: "Email Drafts", href: "/admin/email/drafts" },
+      { label: "Email Templates", href: "/admin/email/templates" },
+      { label: "✨ Generate Email", href: "/admin/email/generate" },
+      { label: "Social Media", href: "/admin/social" },
     ],
   },
   { label: "Analytics", icon: <BarChart2 size={16} />, href: "/admin/analytics" },
@@ -64,9 +61,18 @@ const NAV: NavItem[] = [
 
 const SIDEBAR_W = 240;
 
+function isPathActive(path: string, href: string) {
+  return path === href || (href !== "/admin" && path.startsWith(href + "/"));
+}
+
 function NavLink({ item, currentPath, onClose }: { item: NavItem; currentPath: string; onClose: () => void }) {
-  const [expanded, setExpanded] = useState(currentPath.startsWith(item.href) && item.href !== "/admin");
-  const isActive = currentPath === item.href || (item.href !== "/admin" && currentPath.startsWith(item.href));
+  const childActive = item.children?.some(c => isPathActive(currentPath, c.href)) ?? false;
+  const isActive = item.children ? childActive : isPathActive(currentPath, item.href);
+  const [expanded, setExpanded] = useState(childActive);
+
+  useEffect(() => {
+    if (childActive) setExpanded(true);
+  }, [currentPath, childActive]);
 
   return (
     <div>

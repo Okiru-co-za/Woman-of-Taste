@@ -9,7 +9,7 @@ import { createTransporter } from "../utils/mailer.js";
 import { generateInvoicePdf } from "../utils/pdf.js";
 import { buildFollowup1Email, buildInvoiceConfirmationEmail, buildDeclineEmail, buildPaymentConfirmedEmail, buildTicketEmail, buildOverdueReminderEmail, buildNonPaymentCancellationEmail } from "../utils/invoiceEmail.js";
 import { getEventArrivalDetails } from "../utils/eventArrivalConfig.js";
-import { WOMAN_OF_TASTE_DEFAULT, getEventBankOverride, setEventBankOverride, type BankDetails } from "../utils/eventBankConfig.js";
+import { getEventBaseDefault, getEventBankOverride, setEventBankOverride, type BankDetails } from "../utils/eventBankConfig.js";
 import { sendWeeklyContentReminder } from "../utils/contentReminder.js";
 import { sendMonthlySocialReminder } from "../utils/socialReminder.js";
 import { getJwtSecret, requireAdminAuth as authMiddleware, requireAdminAuthAllowQueryToken } from "../middlewares/adminAuth.js";
@@ -710,7 +710,8 @@ adminRouter.get("/admin/events/:eventId/bank-details", authMiddleware, async (re
   try {
     const { eventId } = req.params;
     const override = await getEventBankOverride(eventId);
-    return res.json({ ok: true, default: WOMAN_OF_TASTE_DEFAULT, override, effective: override ?? WOMAN_OF_TASTE_DEFAULT });
+    const base = getEventBaseDefault(eventId);
+    return res.json({ ok: true, default: base, override, effective: override ?? base });
   } catch (err) {
     console.error("[admin/events/:eventId/bank-details GET]", err);
     return res.status(500).json({ ok: false, error: "Failed to load bank details." });
