@@ -6,7 +6,6 @@ import {
   blogPostsTable, activityLogTable, adminSettingsTable,
   refundRequestsTable, contentPipelineWeeksTable,
 } from "@workspace/db/schema";
-import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 import { requireAdminAuth as authMiddleware } from "../middlewares/adminAuth.js";
 
@@ -481,49 +480,37 @@ CRITICAL JSON RULES:
     return s.replace(/\t/g, " ").replace(/\r/g, "").replace(/\n/g, " ");
   }
 
-  // Determine which provider to use
-  const openAiKey = settings["openai_api_key"] ?? "";
-  const openAiModel = settings["openai_model"] ?? "gpt-5-mini";
-  const preferredProvider = settings["ai_provider"] ?? "anthropic";
-  const useOpenAI = preferredProvider === "openai" && openAiKey.length > 0;
+  // Always OpenAI — the admin's own saved key if present, otherwise the
+  // built-in Replit AI Integrations OpenAI key used everywhere else in the app.
+  const ownKey = settings["openai_api_key"] ?? "";
+  const hasOwnKey = ownKey.length > 0;
+  const openAiModel = hasOwnKey ? (settings["openai_model"] ?? "gpt-5-mini") : "gpt-5-mini";
 
   try {
-    let rawText = "";
+    const openai = hasOwnKey
+      ? new OpenAI({ apiKey: ownKey })
+      : new OpenAI({
+          baseURL: process.env["AI_INTEGRATIONS_OPENAI_BASE_URL"],
+          apiKey: process.env["AI_INTEGRATIONS_OPENAI_API_KEY"] ?? "placeholder",
+        });
 
-    if (useOpenAI) {
-      const openai = new OpenAI({ apiKey: openAiKey });
-      const completion = await openai.chat.completions.create({
-        model: openAiModel,
-        max_tokens: 2000,
-        messages: [{ role: "user", content: insightPrompt }],
-        response_format: { type: "json_object" },
-      });
-      rawText = completion.choices[0]?.message?.content ?? "";
-    } else {
-      const anthropic = new Anthropic({
-        baseURL: process.env["AI_INTEGRATIONS_ANTHROPIC_BASE_URL"],
-        apiKey: process.env["AI_INTEGRATIONS_ANTHROPIC_API_KEY"] ?? "dummy",
-      });
-      const message = await anthropic.messages.create({
-        model: "claude-haiku-4-5",
-        max_tokens: 8192,
-        messages: [{ role: "user", content: insightPrompt }],
-      });
-      rawText = message.content[0]?.type === "text" ? message.content[0].text : "";
-    }
+    const completion = await openai.chat.completions.create({
+      model: openAiModel,
+      max_tokens: 2000,
+      messages: [{ role: "user", content: insightPrompt }],
+      response_format: { type: "json_object" },
+    });
+    const rawText = completion.choices[0]?.message?.content ?? "";
 
     const jsonStr = cleanJsonResponse(rawText);
     const parsed = JSON.parse(jsonStr);
-    const providerUsed = useOpenAI ? `openai:${openAiModel}` : "anthropic:claude-haiku-4-5";
-    return res.json({ ok: true, insights: parsed, targets, provider: providerUsed });
+    return res.json({ ok: true, insights: parsed, targets, provider: `openai:${openAiModel}` });
   } catch (err: any) {
     console.error("[insights] AI error:", err?.message ?? err);
-    const isOpenAiKeyError = useOpenAI && (err?.message?.includes("Incorrect API key") || err?.message?.includes("invalid_api_key") || err?.status === 401);
+    const isOpenAiKeyError = hasOwnKey && (err?.message?.includes("Incorrect API key") || err?.message?.includes("invalid_api_key") || err?.status === 401);
     const errorMsg = isOpenAiKeyError
       ? "Invalid OpenAI API key. Please check your key in Settings → AI Configuration."
-      : useOpenAI
-        ? `OpenAI error: ${err?.message ?? "Unknown error"}`
-        : "Could not generate AI insights. Check that AI_INTEGRATIONS_ANTHROPIC_BASE_URL is set.";
+      : `OpenAI error: ${err?.message ?? "Unknown error"}`;
     return res.status(500).json({ ok: false, error: errorMsg });
   }
 });

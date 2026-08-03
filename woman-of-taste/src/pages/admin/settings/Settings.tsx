@@ -29,7 +29,6 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   target_tiktok_followers: "",
   target_instagram_followers: "",
   // AI configuration
-  ai_provider: "anthropic",
   openai_api_key: "",
   openai_model: "gpt-5-mini",
 };
@@ -178,8 +177,7 @@ export default function Settings() {
   const INTEGRATIONS = [
     { name: "Zoho Mail SMTP", connected: true, detail: "smtppro.zoho.com · info@womanoftaste.co.za" },
     { name: "Booking System", connected: true, detail: "PostgreSQL database · Active" },
-    { name: "AI Insights (Anthropic)", connected: true, detail: "Powers AI analytics insights · Replit AI Integrations" },
-    { name: "AI Insights (OpenAI)", connected: hasOpenAIKey, detail: hasOpenAIKey ? `OpenAI ${settings["openai_model"] ?? "gpt-5-mini"} · API key saved` : "Add your OpenAI API key in AI Configuration below" },
+    { name: "AI Insights (OpenAI)", connected: true, detail: hasOpenAIKey ? `Using your own key · OpenAI ${settings["openai_model"] ?? "gpt-5-mini"}` : "Using the built-in OpenAI key · Replit AI Integrations" },
     { name: "Google Analytics (GA4)", connected: ga4Connected, detail: ga4Connected ? "GA4_PROPERTY_ID + GA4_CREDENTIALS configured · reporting live" : "Add GA4_PROPERTY_ID + GA4_CREDENTIALS to your hosting environment" },
     { name: "TikTok API", connected: false, detail: "Add TIKTOK_CLIENT_KEY + TIKTOK_ACCESS_TOKEN to Replit Secrets" },
     { name: "Instagram API", connected: false, detail: "Add INSTAGRAM_ACCESS_TOKEN + INSTAGRAM_ACCOUNT_ID to Replit Secrets" },
@@ -294,37 +292,27 @@ export default function Settings() {
           <div style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "0.85rem 1rem", background: "#f0f4ff", borderRadius: 8, marginBottom: "1.25rem", border: "1px solid #c7d7fc" }}>
             <Bot size={16} style={{ color: NAVY, marginTop: 2, flexShrink: 0 }} />
             <p style={{ fontSize: "0.8rem", color: "#334155", margin: 0, lineHeight: 1.55 }}>
-              The AI Insights engine on the Analytics page supports two providers. <strong>Anthropic</strong> (Claude Haiku) is built-in via Replit — no key needed. <strong>OpenAI</strong> uses your own API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" style={{ color: NAVY }}>platform.openai.com</a>.
+              The AI Insights engine on the Analytics page, and everything else across the admin panel (chatbot, blog/email generation, content pipeline), runs on <strong>OpenAI</strong>. It uses the built-in Replit AI Integrations key by default — add your own key below from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" style={{ color: NAVY }}>platform.openai.com</a> to use your own billing and pick a specific model instead.
             </p>
           </div>
 
           <div style={grid2}>
             <div>
-              <label style={LABEL}>AI Provider for Insights</label>
+              <label style={LABEL}>OpenAI Model</label>
               <select
-                value={settings["ai_provider"] ?? "anthropic"}
-                onChange={e => set("ai_provider", e.target.value)}
-                style={{ ...INPUT, appearance: "none", cursor: "pointer", background: "white" }}>
-                <option value="anthropic">Anthropic (Claude Haiku) — Built-in</option>
-                <option value="openai">OpenAI — Use my API key</option>
+                value={settings["openai_model"] ?? "gpt-5-mini"}
+                onChange={e => set("openai_model", e.target.value)}
+                disabled={!hasOpenAIKey}
+                style={{ ...INPUT, appearance: "none", cursor: hasOpenAIKey ? "pointer" : "not-allowed", background: hasOpenAIKey ? "white" : "#f3f4f6" }}>
+                <option value="gpt-5-mini">GPT-5 Mini — Fast & affordable</option>
+                <option value="gpt-4o-mini">GPT-4o Mini — Previous generation</option>
+                <option value="gpt-4o">GPT-4o — More capable</option>
+                <option value="gpt-4-turbo">GPT-4 Turbo — Powerful</option>
               </select>
-              <div style={{ fontSize: "0.68rem", color: "#aaa", marginTop: 3 }}>Which AI generates insights on the Analytics page</div>
-            </div>
-            {settings["ai_provider"] === "openai" && (
-              <div>
-                <label style={LABEL}>OpenAI Model</label>
-                <select
-                  value={settings["openai_model"] ?? "gpt-5-mini"}
-                  onChange={e => set("openai_model", e.target.value)}
-                  style={{ ...INPUT, appearance: "none", cursor: "pointer", background: "white" }}>
-                  <option value="gpt-5-mini">GPT-5 Mini — Fast & affordable</option>
-                  <option value="gpt-4o-mini">GPT-4o Mini — Previous generation</option>
-                  <option value="gpt-4o">GPT-4o — More capable</option>
-                  <option value="gpt-4-turbo">GPT-4 Turbo — Powerful</option>
-                </select>
-                <div style={{ fontSize: "0.68rem", color: "#aaa", marginTop: 3 }}>Model to use when OpenAI is selected</div>
+              <div style={{ fontSize: "0.68rem", color: "#aaa", marginTop: 3 }}>
+                {hasOpenAIKey ? "Model used for AI Insights when your own key is set" : "Add your own API key below to choose a model"}
               </div>
-            )}
+            </div>
           </div>
 
           <div style={{ marginTop: "1rem" }}>
