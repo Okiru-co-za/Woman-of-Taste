@@ -4,24 +4,29 @@ import { requireAdminAuth as authMiddleware } from "../middlewares/adminAuth.js"
 
 const websiteAnalyticsRouter = Router();
 
-function getGA4Client() {
+function getGA4Client(): { client: BetaAnalyticsDataClient; propertyId: string } | { error: string } {
   const credRaw = process.env["GA4_CREDENTIALS"];
   const propertyId = process.env["GA4_PROPERTY_ID"];
-  if (!credRaw || !propertyId) return null;
+  if (!propertyId) return { error: "GA4_PROPERTY_ID is not set." };
+  if (!credRaw) return { error: "GA4_CREDENTIALS is not set." };
+  let credentials: any;
   try {
-    const credentials = JSON.parse(credRaw);
-    const client = new BetaAnalyticsDataClient({ credentials });
-    return { client, propertyId };
+    credentials = JSON.parse(credRaw);
   } catch {
-    return null;
+    return { error: "GA4_CREDENTIALS is not valid JSON — make sure the whole service account key file was pasted in, unmodified." };
   }
+  if (!credentials.client_email || !credentials.private_key) {
+    return { error: "GA4_CREDENTIALS is valid JSON but missing client_email or private_key — check it's the full key file, not a partial paste." };
+  }
+  const client = new BetaAnalyticsDataClient({ credentials });
+  return { client, propertyId };
 }
 
 // GET /api/admin/analytics/website — GA4 website stats
 websiteAnalyticsRouter.get("/admin/analytics/website", authMiddleware, async (_req, res) => {
   const ga = getGA4Client();
-  if (!ga) {
-    return res.json({ ok: false, configured: false });
+  if ("error" in ga) {
+    return res.json({ ok: false, configured: false, reason: ga.error });
   }
 
   try {

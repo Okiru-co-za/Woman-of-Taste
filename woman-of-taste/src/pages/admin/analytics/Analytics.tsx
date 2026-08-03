@@ -943,6 +943,7 @@ function fmtDuration(secs: number) {
 function WebsiteTab() {
   const [data, setData] = useState<WebsiteData | null>(null);
   const [configured, setConfigured] = useState<boolean | null>(null);
+  const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const isMobile = useIsMobile();
@@ -951,7 +952,7 @@ function WebsiteTab() {
     adminFetch("/admin/analytics/website")
       .then(r => r.json())
       .then(d => {
-        if (d.configured === false) { setConfigured(false); }
+        if (d.configured === false) { setConfigured(false); setReason(d.reason ?? ""); }
         else if (d.ok) { setConfigured(true); setData(d); }
         else { setConfigured(true); setError(d.error ?? "Could not load analytics."); }
       })
@@ -970,6 +971,12 @@ function WebsiteTab() {
           <p style={{ fontSize: "0.85rem", color: "#666", maxWidth: 520, margin: "0 auto 1.5rem", lineHeight: 1.6 }}>
             Connect your GA4 property to see website traffic, top pages, sessions, bounce rate, and traffic sources right here in your dashboard.
           </p>
+          {reason && (
+            <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 8, padding: "0.75rem 1rem", maxWidth: 460, margin: "0 auto 1.25rem", textAlign: "left" }}>
+              <p style={{ fontSize: "0.72rem", fontWeight: 700, color: "#991b1b", margin: "0 0 2px" }}>Why it's not connected yet:</p>
+              <p style={{ fontSize: "0.78rem", color: "#7f1d1d", margin: 0, lineHeight: 1.5 }}>{reason}</p>
+            </div>
+          )}
           <div style={{ background: "#f8f8fc", borderRadius: 10, padding: "1.25rem", maxWidth: 460, margin: "0 auto", textAlign: "left" }}>
             <p style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "#555", marginBottom: "0.75rem" }}>Required Secrets:</p>
             {["GA4_PROPERTY_ID", "GA4_CREDENTIALS"].map(v => (
