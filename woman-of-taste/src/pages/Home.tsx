@@ -353,7 +353,7 @@ export default function Home() {
                     {i + 1}
                   </div>
                   <div>
-                    <h4 className="font-serif text-lg font-medium text-[hsl(225,50%,22%)] mb-1">{item.label}</h4>
+                    <h3 className="font-serif text-lg font-medium text-[hsl(225,50%,22%)] mb-1">{item.label}</h3>
                     <p className="font-sans text-sm font-normal text-[hsl(28,18%,20%)] leading-relaxed">{item.desc}</p>
                   </div>
                 </motion.div>

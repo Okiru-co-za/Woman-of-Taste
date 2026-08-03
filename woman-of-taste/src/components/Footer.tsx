@@ -21,7 +21,7 @@ export default function Footer() {
 
           {/* Navigate */}
           <div>
-            <h4 className="font-serif text-base font-medium text-[hsl(38,45%,65%)] mb-4 tracking-wide">Navigate</h4>
+            <h3 className="font-serif text-base font-medium text-[hsl(38,45%,65%)] mb-4 tracking-wide">Navigate</h3>
             <nav className="flex flex-col gap-2">
               {[
                 { label: "Home", href: "/" },
@@ -43,7 +43,7 @@ export default function Footer() {
 
           {/* Experiences */}
           <div>
-            <h4 className="font-serif text-base font-medium text-[hsl(38,45%,65%)] mb-4 tracking-wide">Experiences</h4>
+            <h3 className="font-serif text-base font-medium text-[hsl(38,45%,65%)] mb-4 tracking-wide">Experiences</h3>
             <nav className="flex flex-col gap-2">
               {[
                 { label: "All Experiences", href: "/experiences/lifestyle" },
@@ -63,7 +63,7 @@ export default function Footer() {
 
           {/* Locations */}
           <div>
-            <h4 className="font-serif text-base font-medium text-[hsl(38,45%,65%)] mb-4 tracking-wide">Locations</h4>
+            <h3 className="font-serif text-base font-medium text-[hsl(38,45%,65%)] mb-4 tracking-wide">Locations</h3>
             <nav className="flex flex-col gap-2 mb-6">
               {[
                 { label: "Events Johannesburg", href: "/events/johannesburg" },
@@ -77,14 +77,16 @@ export default function Footer() {
                 </Link>
               ))}
             </nav>
-            <h4 className="font-serif text-base font-medium text-[hsl(38,45%,65%)] mb-3 tracking-wide">Follow the Journey</h4>
+            <h3 className="font-serif text-base font-medium text-[hsl(38,45%,65%)] mb-3 tracking-wide">Follow the Journey</h3>
             <div className="flex flex-col gap-2">
               <a href={socialLinks.tiktok} target="_blank" rel="noopener noreferrer"
+                aria-label={`TikTok: ${brandInfo.tiktokHandle}`}
                 className="flex items-center gap-3 font-sans text-xs font-medium text-[hsl(40,25%,68%)] hover:text-[hsl(38,45%,65%)] transition-colors">
                 <FaTiktok size={13} className="text-[hsl(38,45%,65%)]" />
                 {brandInfo.tiktokHandle}
               </a>
               <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer"
+                aria-label={`Instagram: ${brandInfo.instagramHandle}`}
                 className="flex items-center gap-3 font-sans text-xs font-medium text-[hsl(40,25%,68%)] hover:text-[hsl(38,45%,65%)] transition-colors">
                 <FaInstagram size={13} className="text-[hsl(38,45%,65%)]" />
                 {brandInfo.instagramHandle}
@@ -99,7 +101,7 @@ export default function Footer() {
 
           {/* Partners */}
           <div>
-            <h4 className="font-serif text-base font-medium text-[hsl(38,45%,65%)] mb-4 tracking-wide">Partners</h4>
+            <h3 className="font-serif text-base font-medium text-[hsl(38,45%,65%)] mb-4 tracking-wide">Partners</h3>
             <p className="font-sans text-xs font-medium text-[hsl(40,25%,62%)] leading-relaxed mb-4">
               In strategic collaboration with DineXP for hospitality excellence, and Okiru powering our AI intelligence layer.
             </p>
@@ -117,7 +119,7 @@ export default function Footer() {
               <span className="font-sans text-xs font-medium text-[hsl(40,25%,68%)] group-hover:text-[hsl(38,45%,65%)] transition-colors">Visit Okiru</span>
               <ExternalLink size={11} className="text-[hsl(40,25%,68%)]" />
             </a>
-            <h4 className="font-serif text-base font-medium text-[hsl(38,45%,65%)] mt-4 mb-2 tracking-wide">Get in Touch</h4>
+            <h3 className="font-serif text-base font-medium text-[hsl(38,45%,65%)] mt-4 mb-2 tracking-wide">Get in Touch</h3>
             <a href="mailto:info@womanoftaste.co.za"
               className="flex items-center gap-2 font-sans text-xs font-medium text-[hsl(40,25%,68%)] hover:text-[hsl(38,45%,65%)] transition-colors">
               <Mail size={11} /> info@womanoftaste.co.za
@@ -126,14 +128,14 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-[hsl(225,30%,25%)] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="font-sans text-[10px] font-medium text-[hsl(40,25%,48%)] tracking-widest uppercase">
+          <p className="font-sans text-[10px] font-medium text-[hsl(40,25%,62%)] tracking-widest uppercase">
             &copy; {new Date().getFullYear()} {brandInfo.name}. All rights reserved.
           </p>
           <p className="font-serif text-sm italic text-[hsl(38,45%,55%)]">
             {brandInfo.tagline}
           </p>
           <Link href="/admin">
-            <span className="font-sans text-[9px] font-medium tracking-widest uppercase text-[hsl(40,25%,32%)] hover:text-[hsl(40,25%,52%)] transition-colors cursor-pointer">
+            <span className="font-sans text-[9px] font-medium tracking-widest uppercase text-[hsl(40,25%,58%)] hover:text-[hsl(40,25%,75%)] transition-colors cursor-pointer">
               Admin
             </span>
           </Link>
