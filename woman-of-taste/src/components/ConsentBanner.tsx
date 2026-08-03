@@ -103,7 +103,7 @@ export default function ConsentBanner() {
                 textUnderlineOffset: "3px",
               }}
             >
-              Learn more
+              Contact us with questions
             </a>
           </p>
         </div>

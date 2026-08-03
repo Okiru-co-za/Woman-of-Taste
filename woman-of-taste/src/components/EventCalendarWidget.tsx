@@ -50,7 +50,7 @@ export default function EventCalendarWidget() {
 
           <div className="flex flex-col items-end gap-3">
             {/* Butterfly CTA */}
-            <Link href="/events">
+            <Link href="/events" aria-label="View upcoming events">
               <motion.div
                 className="flex items-center gap-2 cursor-pointer group"
                 whileHover={{ scale: 1.05, x: -3 }}
@@ -69,7 +69,7 @@ export default function EventCalendarWidget() {
               </motion.div>
             </Link>
 
-            <Link href="/events">
+            <Link href="/events" aria-label="View all events">
               <motion.button
                 className="hidden sm:flex items-center gap-2 font-sans text-xs font-semibold tracking-widest uppercase text-[hsl(38,45%,65%)] hover:text-white transition-colors"
                 whileHover={{ x: 3 }}

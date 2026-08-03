@@ -1,27 +1,31 @@
 # Woman of Taste
 
-Woman of Taste is a South African women's lifestyle platform curating premium events, restaurant reviews, and curated experiences. It is built around the TikTok community of PashieB (@pashieb_the_wot) and serves women who approach dining, travel, and social life with taste and intention.
+> Woman of Taste is a South African women's lifestyle platform curating premium events, restaurant reviews, and curated experiences. It is built around the TikTok community of PashieB (@pashieb_the_wot) and serves women who approach dining, travel, and social life with taste and intention.
 
-## Canonical domain
+The site publishes original editorial content about women's events in South Africa, curated restaurant and destination reviews (primarily Johannesburg), and lifestyle writing for women who value quality, aesthetics, and intentional living. Canonical domain: https://womanoftaste.co.za
 
-https://womanoftaste.co.za
+## Events
 
-## Key public sections
+- [Upcoming Events](https://womanoftaste.co.za/events): Upcoming and past women's lifestyle events across South Africa
+- [Events in Johannesburg](https://womanoftaste.co.za/events/johannesburg): Johannesburg events
+- [Events in Cape Town](https://womanoftaste.co.za/events/cape-town): Cape Town events
+- [Events in Pretoria](https://womanoftaste.co.za/events/pretoria): Pretoria events
 
-- /events — upcoming and past women's lifestyle events across South Africa
-- /events/johannesburg — Johannesburg events
-- /events/cape-town — Cape Town events
-- /events/pretoria — Pretoria events
-- /journal — editorial content: restaurant guides, lifestyle pieces, and cultural commentary
-- /restaurants — curated restaurant, stay, and experience destination pages
-- /experiences — themed experience categories (private dining, wine tasting, networking, lifestyle)
-- /about — brand story and mission
-- /partnerships — brand partnership information
+## Experiences
 
-## Content focus
+- [Private Dining](https://womanoftaste.co.za/experiences/private-dining): Curated private dining experiences
+- [Wine Tasting](https://womanoftaste.co.za/experiences/wine-tasting): Curated wine tasting experiences
+- [Networking](https://womanoftaste.co.za/experiences/networking): Curated networking experiences for women
+- [Lifestyle](https://womanoftaste.co.za/experiences/lifestyle): Curated lifestyle experiences
 
-The site publishes original editorial content about women's events in South Africa, curated restaurant and destination reviews (primarily Johannesburg), and lifestyle writing for women who value quality, aesthetics, and intentional living.
+## Editorial & Brand
 
-## Sitemap
+- [The Journal](https://womanoftaste.co.za/journal): Editorial content — restaurant guides, lifestyle pieces, and cultural commentary
+- [Restaurants](https://womanoftaste.co.za/restaurants): Curated restaurant, stay, and experience destination pages
+- [About](https://womanoftaste.co.za/about): Brand story and mission
+- [Partnerships](https://womanoftaste.co.za/partnerships): Brand partnership information
+- [Contact](https://womanoftaste.co.za/contact): Get in touch with Woman of Taste
 
-https://womanoftaste.co.za/sitemap.xml
+## Optional
+
+- [Sitemap](https://womanoftaste.co.za/sitemap.xml): Full XML sitemap of the site
