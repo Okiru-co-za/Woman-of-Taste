@@ -108,12 +108,16 @@ export default function Settings() {
   const [reminderResult, setReminderResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [socialSending, setSocialSending] = useState(false);
   const [socialResult, setSocialResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [ga4Connected, setGa4Connected] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
     adminFetch("/admin/settings").then(r => r.json()).then(d => {
       if (d.ok) setSettings(prev => ({ ...prev, ...d.settings }));
     }).finally(() => setLoading(false));
+    adminFetch("/admin/analytics/website").then(r => r.json()).then(d => {
+      setGa4Connected(d.configured === true);
+    }).catch(() => {});
   }, []);
 
   async function saveSettings() {
@@ -176,7 +180,7 @@ export default function Settings() {
     { name: "Booking System", connected: true, detail: "PostgreSQL database · Active" },
     { name: "AI Insights (Anthropic)", connected: true, detail: "Powers AI analytics insights · Replit AI Integrations" },
     { name: "AI Insights (OpenAI)", connected: hasOpenAIKey, detail: hasOpenAIKey ? `OpenAI ${settings["openai_model"] ?? "gpt-5-mini"} · API key saved` : "Add your OpenAI API key in AI Configuration below" },
-    { name: "Google Analytics (GA4)", connected: false, detail: "Add GA4_PROPERTY_ID + GA4_CREDENTIALS to Replit Secrets" },
+    { name: "Google Analytics (GA4)", connected: ga4Connected, detail: ga4Connected ? "GA4_PROPERTY_ID + GA4_CREDENTIALS configured · reporting live" : "Add GA4_PROPERTY_ID + GA4_CREDENTIALS to your hosting environment" },
     { name: "TikTok API", connected: false, detail: "Add TIKTOK_CLIENT_KEY + TIKTOK_ACCESS_TOKEN to Replit Secrets" },
     { name: "Instagram API", connected: false, detail: "Add INSTAGRAM_ACCESS_TOKEN + INSTAGRAM_ACCOUNT_ID to Replit Secrets" },
   ];
