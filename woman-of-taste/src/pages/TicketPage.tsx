@@ -102,7 +102,6 @@ export default function TicketPage() {
     <div style={{ minHeight: "100vh", background: "radial-gradient(ellipse at center, #1a0a0a 0%, #0d0209 60%, #000 100%)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem 1rem", fontFamily: "Georgia, serif" }}>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Raleway:wght@400;600;700&display=swap');
         @keyframes shimmer { 0%,100%{opacity:0.85} 50%{opacity:1} }
         @keyframes spin { to{transform:rotate(360deg)} }
         @keyframes glow { 0%,100%{box-shadow:0 0 20px rgba(201,169,110,0.2)} 50%{box-shadow:0 0 40px rgba(201,169,110,0.45)} }

@@ -31,8 +31,7 @@
     <link rel="canonical" href="https://womanoftaste.co.za/" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <meta name="robots" content="index, follow" />
-    <!-- Google Identity Services -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Google Identity Services: loaded lazily by SignInModal only when opened -->
     <meta name="google-client-id" content="%VITE_GOOGLE_CLIENT_ID%" />
     <meta name="keywords" content="Woman of Taste, WOT, Patience Bwanya, PashieB, dining Johannesburg, lifestyle Johannesburg, private screening Johannesburg, Devil Wears Prada II, exclusive events Johannesburg, premium lifestyle South Africa, hospitality platform, restaurant events Johannesburg" />
     <!-- Google Consent Mode v2: defaults before GTM loads -->
@@ -66,26 +65,41 @@
     </script>
     <!-- End Google Consent Mode v2 defaults -->
 
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-T7SDWN9H');</script>
-    <!-- End Google Tag Manager -->
-
-    <!-- Google Analytics (GA4) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-999W22W92D"></script>
+    <!-- Google Tag Manager & GA4: deferred until window load so they don't
+         compete with the initial render's main-thread work -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-999W22W92D');
+      function wotLoadGtmAndGa() {
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-T7SDWN9H');
+
+        var gaScript = document.createElement('script');
+        gaScript.async = true;
+        gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-999W22W92D';
+        document.head.appendChild(gaScript);
+        gtag('js', new Date());
+        gtag('config', 'G-999W22W92D');
+      }
+      if (document.readyState === 'complete') {
+        wotLoadGtmAndGa();
+      } else {
+        window.addEventListener('load', wotLoadGtmAndGa);
+      }
     </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preload" as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Alex+Brush&display=swap" />
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Alex+Brush&display=swap"
+      media="print" onload="this.media='all'" />
+    <noscript>
+      <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&family=Raleway:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Alex+Brush&display=swap" />
+    </noscript>
 
     <!-- Schema: Organization -->
     <script type="application/ld+json">

@@ -1,10 +1,11 @@
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, Suspense, lazy } from "react";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import NewsletterSignup from "./NewsletterSignup";
-import ChatBot from "./ChatBot";
 import Breadcrumb from "./Breadcrumb";
 import { motion } from "framer-motion";
+
+const ChatBot = lazy(() => import("./ChatBot"));
 
 interface LayoutProps {
   children: ReactNode;
@@ -39,7 +40,9 @@ export default function Layout({ children, title }: LayoutProps) {
       </motion.main>
       <NewsletterSignup />
       <Footer />
-      <ChatBot />
+      <Suspense fallback={null}>
+        <ChatBot />
+      </Suspense>
     </div>
   );
 }

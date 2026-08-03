@@ -36,6 +36,17 @@ function GoogleButton({ onToken }: { onToken: (credential: string) => void }) {
   const [unavailable, setUnavailable] = useState(false);
 
   useEffect(() => {
+    if (!document.getElementById("google-gsi-script")) {
+      const script = document.createElement("script");
+      script.id = "google-gsi-script";
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  }, []);
+
+  useEffect(() => {
     let attempts = 0;
     const interval = setInterval(() => {
       attempts++;
