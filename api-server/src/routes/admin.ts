@@ -9,6 +9,7 @@ import { createTransporter } from "../utils/mailer.js";
 import { generateInvoicePdf } from "../utils/pdf.js";
 import { buildFollowup1Email, buildInvoiceConfirmationEmail, buildDeclineEmail, buildPaymentConfirmedEmail, buildTicketEmail, buildOverdueReminderEmail, buildNonPaymentCancellationEmail } from "../utils/invoiceEmail.js";
 import { getEventArrivalDetails } from "../utils/eventArrivalConfig.js";
+import { WOMAN_OF_TASTE_DEFAULT, getEventBankOverride, setEventBankOverride, type BankDetails } from "../utils/eventBankConfig.js";
 import { sendWeeklyContentReminder } from "../utils/contentReminder.js";
 import { sendMonthlySocialReminder } from "../utils/socialReminder.js";
 import { getJwtSecret, requireAdminAuth as authMiddleware, requireAdminAuthAllowQueryToken } from "../middlewares/adminAuth.js";
@@ -404,7 +405,7 @@ adminRouter.post("/admin/bookings/:id/overdue", authMiddleware, async (req, res)
       to: booking.email,
       cc: smtpUser,
       subject: `Re: Your booking is confirmed — invoice attached — Woman of Taste`,
-      html: buildOverdueReminderEmail(emailData),
+      html: await buildOverdueReminderEmail(emailData),
     });
     return res.json({ ok: true, message: "Marked overdue. Payment reminder sent." });
   } catch (err) {
@@ -451,7 +452,7 @@ adminRouter.post("/admin/bookings/:id/followup", authMiddleware, async (req, res
       from: `"Woman of Taste Events" <${smtpUser}>`,
       to: booking.email,
       subject: `Friendly reminder — your Woman of Taste booking payment`,
-      html: buildFollowup1Email(emailData),
+      html: await buildFollowup1Email(emailData),
     });
 
     await db
@@ -502,7 +503,7 @@ adminRouter.post("/admin/bookings/:id/approve", authMiddleware, async (req, res)
         from: `"Woman of Taste Events" <${smtpUser}>`,
         to: booking.email,
         subject: `Your booking is confirmed — invoice attached — Woman of Taste`,
-        html: buildInvoiceConfirmationEmail(emailData, dueDate),
+        html: await buildInvoiceConfirmationEmail(emailData, dueDate),
       };
       if (pdfPath && fs.existsSync(pdfPath)) {
         mailOptions.attachments = [{ filename: `${booking.invoiceNumber}.pdf`, path: pdfPath, contentType: "application/pdf" }];
@@ -700,6 +701,34 @@ adminRouter.get("/admin/events/:eventTitle/bookings", authMiddleware, async (req
   } catch (err) {
     console.error("[admin/events/:title/bookings]", err);
     return res.status(500).json({ ok: false, error: "Failed to load bookings." });
+  }
+});
+
+// GET /api/admin/events/:eventId/bank-details — the Woman of Taste default plus
+// any custom override configured for this one event
+adminRouter.get("/admin/events/:eventId/bank-details", authMiddleware, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const override = await getEventBankOverride(eventId);
+    return res.json({ ok: true, default: WOMAN_OF_TASTE_DEFAULT, override, effective: override ?? WOMAN_OF_TASTE_DEFAULT });
+  } catch (err) {
+    console.error("[admin/events/:eventId/bank-details GET]", err);
+    return res.status(500).json({ ok: false, error: "Failed to load bank details." });
+  }
+});
+
+// PUT /api/admin/events/:eventId/bank-details — set a custom bank details
+// override for this event, or pass bankDetails: null to clear it and revert
+// to the Woman of Taste default
+adminRouter.put("/admin/events/:eventId/bank-details", authMiddleware, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { bankDetails } = req.body as { bankDetails: BankDetails | null };
+    await setEventBankOverride(eventId, bankDetails ?? null);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("[admin/events/:eventId/bank-details PUT]", err);
+    return res.status(500).json({ ok: false, error: "Failed to save bank details." });
   }
 });
 

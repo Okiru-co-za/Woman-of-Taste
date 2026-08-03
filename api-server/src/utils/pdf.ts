@@ -64,7 +64,7 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<string> {
   })();
 
   const { bankName, accountName, accountNumber, branchCode, accountType, branchName, swiftCode } =
-    getBankDetailsForEvent(data.eventId);
+    await getBankDetailsForEvent(data.eventId);
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 50 });

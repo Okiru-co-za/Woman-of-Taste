@@ -41,7 +41,7 @@ async function runFollowup1() {
 
   for (const booking of needFu1) {
     try {
-      const html = buildFollowup1Email({
+      const html = await buildFollowup1Email({
         invoiceNumber: booking.invoiceNumber,
         firstName: booking.firstName,
         surname: booking.surname,

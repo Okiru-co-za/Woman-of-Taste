@@ -129,7 +129,7 @@ bookingsRouter.get("/bookings/approve/:token", async (req, res) => {
         from: `"Woman of Taste Events" <${smtpUser}>`,
         to: booking.email,
         subject: `Your booking is confirmed — invoice attached — Woman of Taste`,
-        html: buildInvoiceConfirmationEmail(emailData, dueDate),
+        html: await buildInvoiceConfirmationEmail(emailData, dueDate),
       };
 
       if (pdfPath && fs.existsSync(pdfPath)) {

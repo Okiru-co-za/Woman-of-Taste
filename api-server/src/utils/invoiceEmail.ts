@@ -175,12 +175,12 @@ export function buildClientConfirmationEmail(data: InvoiceEmailData): string {
 </body></html>`;
 }
 
-export function buildInvoiceConfirmationEmail(
+export async function buildInvoiceConfirmationEmail(
   data: InvoiceEmailData,
   dueDate: string,
-): string {
+): Promise<string> {
   const { bankName, accountName, accountNumber, branchCode, accountType, swiftCode } =
-    getBankDetailsForEvent(data.eventId);
+    await getBankDetailsForEvent(data.eventId);
 
   return `<!DOCTYPE html>
 <html>
@@ -308,8 +308,8 @@ export function buildNonPaymentCancellationEmail(data: InvoiceEmailData): string
 </body></html>`;
 }
 
-export function buildOverdueReminderEmail(data: InvoiceEmailData): string {
-  const { bankName, accountName, accountNumber, branchCode } = getBankDetailsForEvent(data.eventId);
+export async function buildOverdueReminderEmail(data: InvoiceEmailData): Promise<string> {
+  const { bankName, accountName, accountNumber, branchCode } = await getBankDetailsForEvent(data.eventId);
 
   return `<!DOCTYPE html>
 <html>
@@ -356,8 +356,8 @@ export function buildOverdueReminderEmail(data: InvoiceEmailData): string {
 </body></html>`;
 }
 
-export function buildFollowup1Email(data: InvoiceEmailData): string {
-  const { bankName, accountName, accountNumber, branchCode } = getBankDetailsForEvent(data.eventId);
+export async function buildFollowup1Email(data: InvoiceEmailData): Promise<string> {
+  const { bankName, accountName, accountNumber, branchCode } = await getBankDetailsForEvent(data.eventId);
 
   return `<!DOCTYPE html>
 <html>
