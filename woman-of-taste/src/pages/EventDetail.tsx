@@ -76,6 +76,7 @@ export default function EventDetail() {
   const [form, setForm] = useState({ firstName: "", surname: "", email: "", phone: "", quantity: 1, dietary: "" });
   const [confirmedTickets, setConfirmedTickets] = useState<number | null>(null);
   const [reservedTickets, setReservedTickets] = useState<number | null>(null);
+  const [bookingOverride, setBookingOverride] = useState<boolean | null>(null);
   const [showSignIn, setShowSignIn] = useState(false);
   const [, navigate] = useLocation();
   const { user, profile } = useUserAuth();
@@ -90,6 +91,14 @@ export default function EventDetail() {
           setReservedTickets(Number(d.reservedTickets));
         }
       })
+      .catch(() => {});
+  }, [event?.id]);
+
+  useEffect(() => {
+    if (!event?.id) return;
+    fetch(`${API_BASE}/events/${event.id}/booking-status`)
+      .then((r) => r.json())
+      .then((d) => { if (d.ok) setBookingOverride(d.override); })
       .catch(() => {});
   }, [event?.id]);
 
@@ -168,6 +177,8 @@ export default function EventDetail() {
           pricePerTicket: event.price,
           dietary: form.dietary.trim() || undefined,
           totalCapacity: event.totalCapacity,
+          eventStartDateIso: event.startDateIso,
+          eventBookingOpenDefault: event.bookingOpen ?? false,
         }),
       });
       const data = await res.json();
@@ -201,7 +212,8 @@ export default function EventDetail() {
   const ticketTotal = (event.price ?? 0) * form.quantity;
   const isPrivate = event.type === "private";
   const isPast = isEventPast(event);
-  const bookingLocked = !isPrivate && event.bookingOpen !== true;
+  const bookingOpenEffective = bookingOverride ?? event.bookingOpen ?? false;
+  const bookingLocked = !isPrivate && bookingOpenEffective !== true;
   const totalCapacity = event.totalCapacity ?? null;
   const totalTaken = confirmedTickets !== null
     ? confirmedTickets + (reservedTickets ?? 0)
@@ -687,7 +699,7 @@ export default function EventDetail() {
                   )}
 
                   {/* ── HIGH TEA PROFILE CTA (profile-gated) ── */}
-                  {step === "form" && !isPast && event.id === "high-tea-buitengeluk-jun-2026" && event.bookingOpen && (
+                  {step === "form" && !isPast && event.id === "high-tea-buitengeluk-jun-2026" && bookingOpenEffective && (
                     <motion.div key="profile-cta" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                       <span className="font-sans text-xs font-semibold tracking-[0.3em] uppercase mb-2 block" style={{ color: theme.accent }}>
                         Applications Open

@@ -10,6 +10,7 @@ import { generateInvoicePdf } from "../utils/pdf.js";
 import { buildFollowup1Email, buildInvoiceConfirmationEmail, buildDeclineEmail, buildPaymentConfirmedEmail, buildTicketEmail, buildOverdueReminderEmail, buildNonPaymentCancellationEmail } from "../utils/invoiceEmail.js";
 import { getEventArrivalDetails } from "../utils/eventArrivalConfig.js";
 import { getEventBaseDefault, getEventBankOverride, setEventBankOverride, type BankDetails } from "../utils/eventBankConfig.js";
+import { getBookingOpenOverride, setBookingOpenOverride } from "../utils/eventBookingConfig.js";
 import { sendWeeklyContentReminder } from "../utils/contentReminder.js";
 import { sendMonthlySocialReminder } from "../utils/socialReminder.js";
 import { getJwtSecret, requireAdminAuth as authMiddleware, requireAdminAuthAllowQueryToken } from "../middlewares/adminAuth.js";
@@ -730,6 +731,33 @@ adminRouter.put("/admin/events/:eventId/bank-details", authMiddleware, async (re
   } catch (err) {
     console.error("[admin/events/:eventId/bank-details PUT]", err);
     return res.status(500).json({ ok: false, error: "Failed to save bank details." });
+  }
+});
+
+// GET /api/admin/events/:eventId/booking-status — the current admin override
+// for whether this event accepts bookings (null = using the code default)
+adminRouter.get("/admin/events/:eventId/booking-status", authMiddleware, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const override = await getBookingOpenOverride(eventId);
+    return res.json({ ok: true, override });
+  } catch (err) {
+    console.error("[admin/events/:eventId/booking-status GET]", err);
+    return res.status(500).json({ ok: false, error: "Failed to load booking status." });
+  }
+});
+
+// PUT /api/admin/events/:eventId/booking-status — force bookings open/closed
+// for this event, or pass open: null to clear the override and use the code default
+adminRouter.put("/admin/events/:eventId/booking-status", authMiddleware, async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    const { open } = req.body as { open: boolean | null };
+    await setBookingOpenOverride(eventId, open);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("[admin/events/:eventId/booking-status PUT]", err);
+    return res.status(500).json({ ok: false, error: "Failed to save booking status." });
   }
 });
 

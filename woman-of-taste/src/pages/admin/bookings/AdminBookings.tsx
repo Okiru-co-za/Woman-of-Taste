@@ -161,6 +161,7 @@ export default function AdminBookings() {
   const [statusMsg, setStatusMsg] = useState("");
   const [statusFilter, setStatusFilter] = useState<BookingStatus | null>(null);
   const [refundLoading, setRefundLoading] = useState<number | null>(null);
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
   const isMobile = useIsMobile();
 
   const load = useCallback(async () => {
@@ -219,8 +220,27 @@ export default function AdminBookings() {
 
   const visibleBookings = statusFilter ? bookings.filter(b => b.status === statusFilter) : bookings;
 
+  // Group by event, preserving the createdAt-desc order the list already
+  // arrives in — so the most recently active event's group appears first.
+  const groupedBookings: { eventTitle: string; eventDate: string; bookings: Booking[] }[] = [];
+  {
+    const byTitle = new Map<string, { eventTitle: string; eventDate: string; bookings: Booking[] }>();
+    for (const b of visibleBookings) {
+      let group = byTitle.get(b.eventTitle);
+      if (!group) {
+        group = { eventTitle: b.eventTitle, eventDate: b.eventDate, bookings: [] };
+        byTitle.set(b.eventTitle, group);
+        groupedBookings.push(group);
+      }
+      group.bookings.push(b);
+    }
+  }
+
   function toggleFilter(status: BookingStatus) {
     setStatusFilter(prev => prev === status ? null : status);
+  }
+  function toggleGroup(eventTitle: string) {
+    setCollapsedGroups(prev => ({ ...prev, [eventTitle]: !prev[eventTitle] }));
   }
 
   if (loading) return <AdminLayout title="Bookings"><div style={{ padding: "3rem", textAlign: "center", color: "#aaa" }}>Loading bookings…</div></AdminLayout>;
@@ -286,79 +306,105 @@ export default function AdminBookings() {
         <div style={{ background: "white", borderRadius: 12, padding: "3rem", textAlign: "center", color: "#aaa" }}>
           {statusFilter ? `No ${STATUS_STYLES[statusFilter].label.toLowerCase()} bookings.` : "No bookings yet."}
         </div>
-      ) : isMobile ? (
-        /* Mobile: card stack */
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          {visibleBookings.map(b => (
-            <BookingCard
-              key={b.id} b={b} busy={actionLoading === b.id || refundLoading === b.id}
-              onAction={action} onDownload={downloadInvoice}
-              onNotes={setNotesBooking} onDelete={deleteBooking}
-              onRefundRequest={requestRefund}
-            />
-          ))}
-        </div>
       ) : (
-        /* Desktop: full table */
-        <div style={{ background: "white", borderRadius: 12, boxShadow: "0 1px 6px rgba(0,0,0,0.06)", border: "1px solid #eee", overflow: "hidden" }}>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem" }}>
-              <thead>
-                <tr style={{ background: "#f8f8fc" }}>
-                  {["Invoice", "Guest", "Event", "Qty", "Amount", "Status", "Date", "Actions"].map(h => (
-                    <th key={h} style={{ padding: "0.7rem 0.85rem", textAlign: "left", fontWeight: 700, color: "#555", fontSize: "0.68rem", letterSpacing: "0.08em", textTransform: "uppercase", borderBottom: "1px solid #eee", whiteSpace: "nowrap" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {visibleBookings.map((b, i) => {
-                  const ss = STATUS_STYLES[b.status];
-                  const busy = actionLoading === b.id;
-                  return (
-                    <tr key={b.id} style={{ background: i % 2 === 0 ? "white" : "#fafafa" }}>
-                      <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5", fontFamily: "monospace", fontSize: "0.77rem", color: "#888" }}>{b.invoiceNumber}</td>
-                      <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5" }}>
-                        <div style={{ fontWeight: 600, color: "#1a1a2e" }}>{b.firstName} {b.surname}</div>
-                        <div style={{ fontSize: "0.7rem", color: "#888" }}>{b.email}</div>
-                        <ContactButtons email={b.email} phone={b.phone} compact />
-                      </td>
-                      <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        <div style={{ fontWeight: 500 }}>{b.eventTitle}</div>
-                        <div style={{ fontSize: "0.7rem", color: "#888" }}>{b.eventDate}</div>
-                      </td>
-                      <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5", textAlign: "center" }}>{b.quantity}</td>
-                      <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5", fontWeight: 600, whiteSpace: "nowrap" }}>{fmtZAR(b.totalAmount)}</td>
-                      <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5" }}>
-                        <span style={{ background: ss.bg, color: ss.text, fontSize: "0.7rem", padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>{ss.label}</span>
-                      </td>
-                      <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5", color: "#888", whiteSpace: "nowrap", fontSize: "0.78rem" }}>{fmtDate(b.createdAt)}</td>
-                      <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5" }}>
-                        <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
-                          {b.status === "PENDING" && (
-                            <>
-                              <button title="Approve" onClick={() => action(b.id, `/admin/bookings/${b.id}/approve`)} disabled={busy} style={{ display: "flex", alignItems: "center", gap: 4, background: "#16a34a", color: "white", border: "none", borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontSize: "0.72rem", fontWeight: 700, opacity: busy ? 0.6 : 1 }}><Check size={12} /> Approve</button>
-                              <button title="Decline" onClick={() => action(b.id, `/admin/bookings/${b.id}/decline`)} disabled={busy} style={{ display: "flex", alignItems: "center", gap: 4, background: "#dc2626", color: "white", border: "none", borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontSize: "0.72rem", fontWeight: 700, opacity: busy ? 0.6 : 1 }}><X size={12} /> Decline</button>
-                            </>
-                          )}
-                          {(b.status === "APPROVED" || b.status === "OVERDUE") && (
-                            <button title="Mark as Paid" onClick={() => action(b.id, `/admin/bookings/${b.id}/paid`)} disabled={busy} style={{ display: "flex", alignItems: "center", gap: 4, background: "#dcfce7", color: "#16a34a", border: "1px solid #bbf7d0", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem", fontWeight: 600 }}><RandIcon size={12} /> Paid</button>
-                          )}
-                          {b.status === "APPROVED" && (<button title="Mark Overdue" onClick={() => action(b.id, `/admin/bookings/${b.id}/overdue`)} disabled={busy} style={{ background: "#fee2e2", color: "#dc2626", border: "none", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem" }}><AlertTriangle size={12} /></button>)}
-                          {b.status === "APPROVED" && (<button title="Decline" onClick={() => action(b.id, `/admin/bookings/${b.id}/decline`)} disabled={busy} style={{ background: "#fee2e2", color: "#dc2626", border: "none", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem" }}><X size={12} /></button>)}
-                          {b.status === "OVERDUE" && (<button title="Cancel — No Payment" onClick={() => action(b.id, `/admin/bookings/${b.id}/cancel-nonpayment`)} disabled={busy} style={{ display: "flex", alignItems: "center", gap: 3, background: "#fff0e8", color: "#c2410c", border: "1px solid #fed7aa", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem", fontWeight: 600, opacity: busy ? 0.5 : 1 }}><Ban size={11} /> No Payment</button>)}
-                          {b.status !== "DECLINED" && b.status !== "PENDING" && (<button title="Send Follow-up" onClick={() => action(b.id, `/admin/bookings/${b.id}/followup`)} disabled={busy} style={{ background: "#f0f4ff", color: "hsl(225,50%,30%)", border: "none", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem" }}><Send size={12} /></button>)}
-                          <button title="Download Invoice" onClick={() => downloadInvoice(b.id)} style={{ background: "#f5f0ff", color: "hsl(270,50%,40%)", border: "none", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem" }}><FileText size={12} /></button>
-                          {b.status === "PAID" && (<button title="Request Refund — sends bank details form to guest" onClick={() => requestRefund(b)} disabled={busy || refundLoading === b.id} style={{ display: "flex", alignItems: "center", gap: 3, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem", fontWeight: 600, opacity: (busy || refundLoading === b.id) ? 0.5 : 1 }}><RotateCcw size={11} /> Refund</button>)}
-                          <button title="Notes" onClick={() => setNotesBooking(b)} style={{ background: "#fffbf0", color: "#a16207", border: "none", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem" }}><StickyNote size={12} /></button>
-                          <button title="Delete" onClick={() => deleteBooking(b)} disabled={busy} style={{ background: "#fff0f0", color: "#dc2626", border: "1px solid #fecaca", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem", opacity: busy ? 0.5 : 1 }}><Trash2 size={12} /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          {groupedBookings.map(group => {
+            const collapsed = collapsedGroups[group.eventTitle];
+            const groupRevenue = group.bookings.filter(b => b.status === "PAID").reduce((s, b) => s + b.totalAmount, 0);
+            return (
+              <div key={group.eventTitle}>
+                {/* Event group header */}
+                <div
+                  onClick={() => toggleGroup(group.eventTitle)}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.75rem", padding: "0.6rem 0.2rem", cursor: "pointer", flexWrap: "wrap" }}
+                >
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+                    <h3 style={{ margin: 0, fontFamily: "Cormorant Garamond, serif", fontSize: "1.05rem", color: "hsl(225,50%,22%)" }}>{group.eventTitle}</h3>
+                    <span style={{ fontSize: "0.75rem", color: "#999" }}>{group.eventDate}</span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: "0.75rem", color: "#888" }}>
+                    <span>{group.bookings.length} booking{group.bookings.length !== 1 ? "s" : ""}</span>
+                    <span style={{ fontWeight: 700, color: "hsl(225,50%,22%)" }}>{fmtZAR(groupRevenue)}</span>
+                    <span style={{ fontSize: "0.7rem", color: "#bbb" }}>{collapsed ? "Show ▾" : "Hide ▴"}</span>
+                  </div>
+                </div>
+
+                {!collapsed && (
+                  isMobile ? (
+                    /* Mobile: card stack */
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                      {group.bookings.map(b => (
+                        <BookingCard
+                          key={b.id} b={b} busy={actionLoading === b.id || refundLoading === b.id}
+                          onAction={action} onDownload={downloadInvoice}
+                          onNotes={setNotesBooking} onDelete={deleteBooking}
+                          onRefundRequest={requestRefund}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    /* Desktop: full table */
+                    <div style={{ background: "white", borderRadius: 12, boxShadow: "0 1px 6px rgba(0,0,0,0.06)", border: "1px solid #eee", overflow: "hidden" }}>
+                      <div style={{ overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.82rem" }}>
+                          <thead>
+                            <tr style={{ background: "#f8f8fc" }}>
+                              {["Invoice", "Guest", "Qty", "Amount", "Status", "Date", "Actions"].map(h => (
+                                <th key={h} style={{ padding: "0.7rem 0.85rem", textAlign: "left", fontWeight: 700, color: "#555", fontSize: "0.68rem", letterSpacing: "0.08em", textTransform: "uppercase", borderBottom: "1px solid #eee", whiteSpace: "nowrap" }}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {group.bookings.map((b, i) => {
+                              const ss = STATUS_STYLES[b.status];
+                              const busy = actionLoading === b.id;
+                              return (
+                                <tr key={b.id} style={{ background: i % 2 === 0 ? "white" : "#fafafa" }}>
+                                  <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5", fontFamily: "monospace", fontSize: "0.77rem", color: "#888" }}>{b.invoiceNumber}</td>
+                                  <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5" }}>
+                                    <div style={{ fontWeight: 600, color: "#1a1a2e" }}>{b.firstName} {b.surname}</div>
+                                    <div style={{ fontSize: "0.7rem", color: "#888" }}>{b.email}</div>
+                                    <ContactButtons email={b.email} phone={b.phone} compact />
+                                  </td>
+                                  <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5", textAlign: "center" }}>{b.quantity}</td>
+                                  <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5", fontWeight: 600, whiteSpace: "nowrap" }}>{fmtZAR(b.totalAmount)}</td>
+                                  <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5" }}>
+                                    <span style={{ background: ss.bg, color: ss.text, fontSize: "0.7rem", padding: "2px 8px", borderRadius: 99, fontWeight: 700 }}>{ss.label}</span>
+                                  </td>
+                                  <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5", color: "#888", whiteSpace: "nowrap", fontSize: "0.78rem" }}>{fmtDate(b.createdAt)}</td>
+                                  <td style={{ padding: "0.7rem 0.85rem", borderBottom: "1px solid #f0f0f5" }}>
+                                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap", alignItems: "center" }}>
+                                      {b.status === "PENDING" && (
+                                        <>
+                                          <button title="Approve" onClick={() => action(b.id, `/admin/bookings/${b.id}/approve`)} disabled={busy} style={{ display: "flex", alignItems: "center", gap: 4, background: "#16a34a", color: "white", border: "none", borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontSize: "0.72rem", fontWeight: 700, opacity: busy ? 0.6 : 1 }}><Check size={12} /> Approve</button>
+                                          <button title="Decline" onClick={() => action(b.id, `/admin/bookings/${b.id}/decline`)} disabled={busy} style={{ display: "flex", alignItems: "center", gap: 4, background: "#dc2626", color: "white", border: "none", borderRadius: 6, padding: "5px 10px", cursor: "pointer", fontSize: "0.72rem", fontWeight: 700, opacity: busy ? 0.6 : 1 }}><X size={12} /> Decline</button>
+                                        </>
+                                      )}
+                                      {(b.status === "APPROVED" || b.status === "OVERDUE") && (
+                                        <button title="Mark as Paid" onClick={() => action(b.id, `/admin/bookings/${b.id}/paid`)} disabled={busy} style={{ display: "flex", alignItems: "center", gap: 4, background: "#dcfce7", color: "#16a34a", border: "1px solid #bbf7d0", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem", fontWeight: 600 }}><RandIcon size={12} /> Paid</button>
+                                      )}
+                                      {b.status === "APPROVED" && (<button title="Mark Overdue" onClick={() => action(b.id, `/admin/bookings/${b.id}/overdue`)} disabled={busy} style={{ background: "#fee2e2", color: "#dc2626", border: "none", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem" }}><AlertTriangle size={12} /></button>)}
+                                      {b.status === "APPROVED" && (<button title="Decline" onClick={() => action(b.id, `/admin/bookings/${b.id}/decline`)} disabled={busy} style={{ background: "#fee2e2", color: "#dc2626", border: "none", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem" }}><X size={12} /></button>)}
+                                      {b.status === "OVERDUE" && (<button title="Cancel — No Payment" onClick={() => action(b.id, `/admin/bookings/${b.id}/cancel-nonpayment`)} disabled={busy} style={{ display: "flex", alignItems: "center", gap: 3, background: "#fff0e8", color: "#c2410c", border: "1px solid #fed7aa", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem", fontWeight: 600, opacity: busy ? 0.5 : 1 }}><Ban size={11} /> No Payment</button>)}
+                                      {b.status !== "DECLINED" && b.status !== "PENDING" && (<button title="Send Follow-up" onClick={() => action(b.id, `/admin/bookings/${b.id}/followup`)} disabled={busy} style={{ background: "#f0f4ff", color: "hsl(225,50%,30%)", border: "none", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem" }}><Send size={12} /></button>)}
+                                      <button title="Download Invoice" onClick={() => downloadInvoice(b.id)} style={{ background: "#f5f0ff", color: "hsl(270,50%,40%)", border: "none", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem" }}><FileText size={12} /></button>
+                                      {b.status === "PAID" && (<button title="Request Refund — sends bank details form to guest" onClick={() => requestRefund(b)} disabled={busy || refundLoading === b.id} style={{ display: "flex", alignItems: "center", gap: 3, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem", fontWeight: 600, opacity: (busy || refundLoading === b.id) ? 0.5 : 1 }}><RotateCcw size={11} /> Refund</button>)}
+                                      <button title="Notes" onClick={() => setNotesBooking(b)} style={{ background: "#fffbf0", color: "#a16207", border: "none", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem" }}><StickyNote size={12} /></button>
+                                      <button title="Delete" onClick={() => deleteBooking(b)} disabled={busy} style={{ background: "#fff0f0", color: "#dc2626", border: "1px solid #fecaca", borderRadius: 6, padding: "4px 8px", cursor: "pointer", fontSize: "0.7rem", opacity: busy ? 0.5 : 1 }}><Trash2 size={12} /></button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </AdminLayout>

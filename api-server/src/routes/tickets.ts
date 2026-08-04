@@ -10,6 +10,7 @@ import {
   buildWaitlistConfirmationEmail,
 } from "../utils/invoiceEmail.js";
 import { upsertContact } from "../utils/upsertContact.js";
+import { getBookingOpenOverride } from "../utils/eventBookingConfig.js";
 
 const ticketsRouter = Router();
 
@@ -26,6 +27,8 @@ interface TicketPayload {
   pricePerTicket: number;
   dietary?: string;
   totalCapacity?: number;
+  eventStartDateIso?: string;
+  eventBookingOpenDefault?: boolean;
 }
 
 ticketsRouter.post("/tickets", async (req, res) => {
@@ -52,6 +55,20 @@ ticketsRouter.post("/tickets", async (req, res) => {
 
   if (quantity < 1 || quantity > 10) {
     return res.status(400).json({ ok: false, error: "Invalid ticket quantity." });
+  }
+
+  // An event that has already happened never accepts bookings, regardless of
+  // any admin override — this is a hard physical constraint, not a toggle.
+  if (payload.eventStartDateIso && new Date(payload.eventStartDateIso).getTime() < Date.now()) {
+    return res.status(400).json({ ok: false, error: "This event has already taken place. Bookings are closed." });
+  }
+
+  // Admin override wins if set; otherwise fall back to the event's own
+  // code-level default (Event.bookingOpen in data/events.ts).
+  const bookingOverride = await getBookingOpenOverride(eventId);
+  const bookingOpen = bookingOverride ?? payload.eventBookingOpenDefault ?? false;
+  if (!bookingOpen) {
+    return res.status(400).json({ ok: false, error: "Bookings for this event are currently closed." });
   }
 
   const totalAmount = quantity * pricePerTicket;

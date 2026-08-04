@@ -8,6 +8,7 @@ import {
   buildInvoiceConfirmationEmail,
   buildDeclineEmail,
 } from "../utils/invoiceEmail.js";
+import { getBookingOpenOverride } from "../utils/eventBookingConfig.js";
 import fs from "fs";
 import path from "path";
 
@@ -309,6 +310,14 @@ bookingsRouter.get("/events/:eventId/seats", async (req, res) => {
     .reduce((s, r) => s + Number(r.total), 0);
 
   return res.json({ ok: true, eventId, confirmedTickets, reservedTickets });
+});
+
+// GET /api/events/:eventId/booking-status — public: the admin override for
+// whether this event currently accepts bookings, if one has been set
+bookingsRouter.get("/events/:eventId/booking-status", async (req, res) => {
+  const { eventId } = req.params;
+  const override = await getBookingOpenOverride(eventId);
+  return res.json({ ok: true, override });
 });
 
 export default bookingsRouter;

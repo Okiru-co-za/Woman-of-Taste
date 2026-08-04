@@ -6,7 +6,7 @@ import {
   Calendar, MapPin, ArrowRight, Plus, X, Check, Flag,
   Target, DollarSign, Users, ChevronDown, ChevronUp, Landmark,
 } from "lucide-react";
-import { events as publicEvents } from "@/data/events";
+import { events as publicEvents, isEventPast } from "@/data/events";
 import BankDetailsPanel from "./BankDetailsPanel";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -227,6 +227,8 @@ export default function AdminEvents() {
   const [showModal, setShowModal] = useState(false);
   const [showPast, setShowPast] = useState(false);
   const [bankModalEvent, setBankModalEvent] = useState<{ id: string; title: string } | null>(null);
+  const [bookingOverrides, setBookingOverrides] = useState<Record<string, boolean | null>>({});
+  const [bookingBusy, setBookingBusy] = useState<string | null>(null);
 
   async function loadProjects() {
     const d = await adminFetch("/admin/event-projects").then(r => r.json());
@@ -238,8 +240,24 @@ export default function AdminEvents() {
     if (d.ok) setPastEvents(d.events);
     setLoadingE(false);
   }
+  async function loadBookingOverrides() {
+    const results = await Promise.all(publicEvents.map(e =>
+      adminFetch(`/admin/events/${encodeURIComponent(e.id)}/booking-status`).then(r => r.json()).then(d => [e.id, d.ok ? d.override : null] as const)
+    ));
+    setBookingOverrides(Object.fromEntries(results));
+  }
 
-  useEffect(() => { loadProjects(); loadPast(); }, []);
+  useEffect(() => { loadProjects(); loadPast(); loadBookingOverrides(); }, []);
+
+  async function toggleBooking(eventId: string, effectiveOpen: boolean) {
+    setBookingBusy(eventId);
+    const d = await adminFetch(`/admin/events/${encodeURIComponent(eventId)}/booking-status`, {
+      method: "PUT",
+      body: JSON.stringify({ open: !effectiveOpen }),
+    }).then(r => r.json());
+    if (d.ok) setBookingOverrides(prev => ({ ...prev, [eventId]: !effectiveOpen }));
+    setBookingBusy(null);
+  }
 
   return (
     <AdminLayout title="Events">
@@ -285,29 +303,54 @@ export default function AdminEvents() {
           </div>
         </div>
 
-        {/* Public Events — bank details */}
+        {/* Public Events — payment details & booking status */}
         <div style={{ marginBottom: "2rem" }}>
           <h3 style={{ margin: "0 0 0.85rem", fontFamily: FONT, fontSize: "0.72rem", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-            Public Events — Payment Details ({publicEvents.length})
+            Public Events ({publicEvents.length})
           </h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-            {publicEvents.map(e => (
-              <div key={e.id} style={{ background: "white", borderRadius: 12, padding: "0.9rem 1.1rem", border: "1px solid #eee", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontFamily: SERIF, fontSize: "0.98rem", fontWeight: 600, color: "hsl(225,50%,22%)" }}>{e.title}</div>
-                  <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: 3 }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: FONT, fontSize: "0.72rem", color: "#9ca3af" }}><Calendar size={11} />{e.date}</span>
-                    <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: FONT, fontSize: "0.72rem", color: "#9ca3af" }}><MapPin size={11} />{e.location}</span>
+            {publicEvents.map(e => {
+              const past = isEventPast(e);
+              const override = bookingOverrides[e.id] ?? null;
+              const effectiveOpen = override ?? e.bookingOpen ?? false;
+              return (
+                <div key={e.id} style={{ background: "white", borderRadius: 12, padding: "0.9rem 1.1rem", border: "1px solid #eee", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontFamily: SERIF, fontSize: "0.98rem", fontWeight: 600, color: "hsl(225,50%,22%)" }}>{e.title}</span>
+                      {past ? (
+                        <span style={{ padding: "2px 9px", borderRadius: 20, background: "#f3f4f6", color: "#6b7280", fontSize: "0.63rem", fontWeight: 700, fontFamily: FONT, textTransform: "uppercase" }}>Past</span>
+                      ) : (
+                        <span style={{ padding: "2px 9px", borderRadius: 20, background: effectiveOpen ? "#dcfce7" : "#fee2e2", color: effectiveOpen ? "#166534" : "#991b1b", fontSize: "0.63rem", fontWeight: 700, fontFamily: FONT, textTransform: "uppercase" }}>
+                          {effectiveOpen ? "Bookings Open" : "Bookings Closed"}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: 3 }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: FONT, fontSize: "0.72rem", color: "#9ca3af" }}><Calendar size={11} />{e.date}</span>
+                      <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: FONT, fontSize: "0.72rem", color: "#9ca3af" }}><MapPin size={11} />{e.location}</span>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    {!past && (
+                      <button
+                        onClick={() => toggleBooking(e.id, effectiveOpen)}
+                        disabled={bookingBusy === e.id}
+                        style={BTN(effectiveOpen ? "#fee2e2" : "#dcfce7", effectiveOpen ? "#991b1b" : "#166534")}
+                      >
+                        {bookingBusy === e.id ? "Saving…" : effectiveOpen ? "Close Bookings" : "Open Bookings"}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setBankModalEvent({ id: e.id, title: e.title })}
+                      style={BTN("#f3f4f6", "#374151")}
+                    >
+                      <Landmark size={14} /> Bank Details
+                    </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => setBankModalEvent({ id: e.id, title: e.title })}
-                  style={BTN("#f3f4f6", "#374151")}
-                >
-                  <Landmark size={14} /> Bank Details
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
